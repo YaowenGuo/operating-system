@@ -1,9 +1,9 @@
 ;hello-os
     CYLS    EQU     10      ; 指定10个柱面
     ORG     0x7c00          ; （origin）汇编器。如果没有它，有几个指令就不能
-    ;被正确的翻译和执行。有了这条指令,$符的含义发生变化，它不再是指输出我耳机那的地几个字节，
-    ;而是代表要读入的内存地址
-;以下这段是标准FAT12格式软盘专用的代码
+                            ; 被正确的翻译和执行。有了这条指令,$符的含义发生变化，它不再是指输出我耳机那的地几个字节，
+                            ; 而是代表要读入的内存地址
+                            ; 以下这段是标准FAT12格式软盘专用的代码
     JMP     entry           ; 跳转到程序区去执行程序
     DB      0x90            ; ?
     DB      "HELLOIPL"      ; 启动区的名称可以是任意8字节的字符串，不够填‘\0’
@@ -23,7 +23,7 @@
     DD      0xffffffff      ; （可能是）卷标号码
     DB      "HELLO-OS   "   ; 磁盘的名称（11字节）
     DB      "FAT12   "      ; 磁盘格式名称（8字节）
-    times   18  db    0        ; 先空出18字节
+    times   18  db    0     ; 先空出18字节
 
 
 entry:
@@ -60,11 +60,11 @@ retry:
     JMP     retry
 next:
     MOV     AX, ES
-    ADD     AX, 0X20         ; 不能直接在BX上加，因为180K超出了BX的范围
-    MOV     ES, AX           ; 讲ES:BX的指向后移512字节
+    ADD     AX, 0X20        ; 不能直接在BX上加，因为180K超出了BX的范围
+    MOV     ES, AX          ; 讲ES:BX的指向后移512字节
     INC     CL
-    CMP     CL, 18           ; 读完18扇区结束
-    JBE     readloop         ; 
+    CMP     CL, 18          ; 读完18扇区结束
+    JBE     readloop        ; 
     MOV     CL, 1
     INC     DH
     CMP     DH, 2
@@ -74,10 +74,9 @@ next:
     CMP     CH, CYLS
     JB      readloop
 
-fin:
-    HLT                     ; （halt停止）让CPU进入等待状态。只要外部发生变化，如按下键盘或移动鼠标，cpu就会醒来
-    ;加入SHL后CPU就不会毫无意义的空转，非常省电。作为一个初学者更应该样成良好的习惯。
-    JMP     fin             ; 无限循环
+; 跳到操作系统处执行，将控制权交给操作系统
+    mov     [0x0ff0],ch     ; 将磁盘装载内容的结束位置保存在内存0x0ff0的地方，即CYLS的值
+    jmp     0xc200          ; 计算出的操作系统加载到内存的起始地址
 
 error:
     mov     si,msg
