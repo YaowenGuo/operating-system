@@ -17,11 +17,11 @@
 section .text               ; unix like platforms user like use lowercase, and 
                             ; me too.
     org     7c00h           ; 告诉编译器程序将被加载到0x7c00处，编译器据此计算地址
-    mov     ax, 0           ; \
+    mov     ax, 0           ; |
     mov     ss, ax          ; |堆栈地址
     mov     sp, 7c00h       ; /
     
-    mov     ax, 800h        ; \
+    mov     ax, 800h        ; |
     mov     es, ax          ; |内存地址
     xor     bx, bx          ; /
     mov     dl, 0           ; 驱动器号，A驱动器，有多个软件驱动器的时候，用于指定哪个驱动器
@@ -78,11 +78,11 @@ NextSector:
     call    numToLocation   ; 将扇区序号转化为物理位置（磁道，磁头，扇区）
     call    readOneSector   ; 读取一个扇区
     jc      .fin            ; 出错就返回，readOneSecotr的返回值作为本函数的返回值
-    dec     di              ; \
+    dec     di              ; |
     cmp     di, 0           ; |判断扇区个数是否满足结束条件
     jz      .fin            ; /
     inc     si              ; 扇区序号加１
-    mov     ax, es          ; \
+    mov     ax, es          ; |
     add     ax, 20h         ; |es:bx的地址加５１２字节
     mov     es, ax          ; /
     jmp     NextSector      ; 读取下一个扇区
@@ -121,7 +121,7 @@ numToLocation:
     div     cl              ; 除后，ah-磁头号，al-磁道号
     mov     dh, ah          ; 磁头号放到dh    
     mov     ch, al          ; 磁道号（柱面号）放到ch
-    pop     ax              ; \ 扇区号放到cl
+    pop     ax              ; | 扇区号放到cl
     mov     cl, ah          ; /
     ret 
 
@@ -143,13 +143,13 @@ readOneSector:
     push    si              ; /
     mov     si, DISKERRORTIME ; 设置最大出错读取次数
 .retry:
-    mov     ax, 2           ; \
+    mov     ax, 2           ; |
     mov     al, 1           ; | 读取一个扇区，因为出错是ax返回值，所以每次都要设置
     int     0x13            ; /
     jnc     .fin            ; 没出错直接结束
     dec     si              ; 出错剩余次数减１
     jz      .fin            ; 剩余０次后也跳转到结束
-    mov     ah, 0           ; \ 
+    mov     ah, 0           ; | 
     mov     dl, 0           ; | 磁盘复位后再读一次
     int     0x13            ; |
     jmp     .retry          ; /
