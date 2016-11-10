@@ -90,7 +90,9 @@ putloop:
     MOV     BX,15           ; 指定文字颜色
     INT     0x10            ; 调用显卡BIOS
     JMP     putloop
-
+fin:
+    HLT                     ; 暂停执行
+    JMP     fin             ; 循环
 
 msg:
     DB      0x0a, 0x0a      ; 换行两次
