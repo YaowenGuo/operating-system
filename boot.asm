@@ -1,4 +1,4 @@
-; Exetutable name           : ipl.bin
+; Exetutable name           : boot.bin
 ; Version                   : 1.0
 ; Created date              : 10/31/2016
 ; Last update               : 10/31/2016
@@ -17,7 +17,7 @@
 section .text               ; unix like platforms user like use lowercase, and 
                             ; me too.
     org     7c00h           ; 告诉编译器程序将被加载到0x7c00处，编译器据此计算地址
-    mov     ax, 0           ; |
+    mov     ax, 0           ; | <---千万不要用反斜线，这会对回车进行转义，导致编译器把下一行认为改行的继续
     mov     ss, ax          ; |堆栈地址
     mov     sp, 7c00h       ; /
     
@@ -29,14 +29,9 @@ section .text               ; unix like platforms user like use lowercase, and
     mov     di, 20          ; 磁盘数量
     call    readSector      ; 调用读取函数
     jc      ReadSectorError ; 出错，显示错误，调用BIOS回到BIOS
-stop:
-    mov     ax, 0
-    mov     es, ax
-    mov     bp, READ_SECTOR_GOOD
-    mov     cx, READ_GOOD_STRLEN
-    call    printStr
-    hlt
-    jmp     stop
+
+    jmp     8000h
+
 ReadSectorError:
     mov     ax, 0
     mov     es, ax
@@ -143,7 +138,7 @@ readOneSector:
     push    si              ; /
     mov     si, DISKERRORTIME ; 设置最大出错读取次数
 .retry:
-    mov     ax, 2           ; |
+    mov     ah, 2           ; |
     mov     al, 1           ; | 读取一个扇区，因为出错是ax返回值，所以每次都要设置
     int     0x13            ; /
     jnc     .fin            ; 没出错直接结束
@@ -180,4 +175,3 @@ printStr:                   ; 这里有一个陷阱，不能再将sp赋值给bp�
 
 times 510-( $-$$ ) db 0     ; 有org时，$$是程序开始的实际地址，$是本指令的实际地址。
     dw 0xaa55               ; DB      0x55, 0xaa      另一种写法，明显这是大字端机器
-
