@@ -9,7 +9,7 @@
 ;
 ; Buile using this command:
 ;
-; yasm boot.asm -o boot.bin ;不要加-f elf之类的格式参数，否则会将org指令当作标签来处理
+; nasm boot.asm  ;不要加-f elf之类的格式参数，否则会将org指令当作标签来处理
 ; 
 ;
 
@@ -91,7 +91,7 @@ entry:
     mov     di, SECTORS_OF_CLUSTER      ; 每簇有多少个扇区，一次加载进内存
     mov     ax, [load_seg_add]          ; 将加载器放到0x9000之后的内存
     mov     es, ax                      ; 
-    add     ax, 0x20                    ; 计算下一簇数据的加载地址
+    add     ax, 0x20                    ; 计算下一簇数据的加载地址，512字节加在段寄存器上
     mov     [load_seg_add], ax          ; 保存下一个簇的加载地址
     mov     dl, 0                       ; 驱动器号，A驱动器，有多个软件驱动器的时候，用于指定哪个驱动器
     call    readSector
