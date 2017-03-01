@@ -1,6 +1,14 @@
 ; 这里对标签命名进行规范
+; 数据定义：
+; 数据定义申请空间使用全小写，以下划线连接，如　save_number db 0
 ; 常数使用全大写，中间使用下划线连接。如：ROOTDIR_START_SECTOR    equ 19
 ; 字符串使用首字母大写，使用下划线连接。如：Not_Find_File      DB  "NOT FIND FILE\n"
+; 标号：
+; 过程和宏使用单词相连，第一个单词首字母小写，其他单词首字母大写。如　printStr
+; 标签使用首字母大写的单词相连，如 .notAdd
+;
+; !这里需要注意，如果标记的词本身是几个单词缩写成的，即只使用了每个单词的首字母，则使用大写，如 GDT
+
 
     SECTORS_OF_CLUSTER      equ 1       ; 每个簇的扇区数，整个FAT格式区，只有这个用得到，多以定义成常量
     ; 代码的内存布局
@@ -8,6 +16,8 @@
     DIRECTORY_ADDRESS       equ 0x1700  ; 根目录的加载地址
     LOADER_ADDRESS          equ 0x90000
     KERNEL_ADDRESS          equ 0x80000
+    PAGE_DIR_ADDRESS        equ 0x100000
+    PAGE_TABLE_ADDRESS      equ 0x101000
     ; 扇区信息，这些全是根据引导扇区中FAT文件的配置计算出来的，使用代码计算也可以，但很繁琐，况且
     ; 引导扇区没有这么大空间放这些代码，这里预先计算出结果直接使用
 
