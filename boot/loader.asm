@@ -15,7 +15,7 @@
     org     0                                ;偏移地址为0时，不用写org，或者org 0。两者是一样的。
     jmp     Entery
 %include    "staticlib.inc"
-    kernel_seg_add  dw  KERNEL_ADDRESS >> 4 ; kernel.bin加载位置的段地址
+    kernel_seg_add  dw  KERNEL_FILE_ADDRESS >> 4 ; kernel.bin加载位置的段地址
     Kernel_Name     db  "KERNEL  BIN"
     Load_Access_Msg db  "Loader have been loaded!"
     LOAD_ACCESS_LEN equ $ - Load_Access_Msg
@@ -330,10 +330,14 @@ ProterModeStart:
     dispMemInfo
     setupPaging
 
-.stop:
+    call    initKernel
+
+; .stop:
    
-   hlt
-   jmp     .stop
+;    hlt
+;    jmp     .stop
+    ; 跳入内核执行
+    jmp     SELECTER_FLATC:KERNEL_ENTRY_PHYADDR
     
 
 ;---------------------------------------------------------------------------
@@ -505,3 +509,61 @@ dispIntInHex:
     pop     ecx
     pop     ebx
     ret
+
+;-------------------------------------------------------------------------
+; 内存拷贝
+; void* memCpy( void * es:pDest, void* ds:pSrc, int iSize);
+; pDest:    point destination
+; pSrc:     point source
+; iSize:    int size
+; return:   destination
+
+memCpy:
+    push    ebp
+    mov     ebp, esp
+    push    esi
+    push    edi
+    push    ecx
+
+    mov     edi, [ebp + 8]          ; Destination
+    mov     esi, [ebp + 12]         ; Source
+    mov     ecx, [ebp + 16]         ; Counter
+    cld
+    rep     movsb
+
+    mov     eax, [ebp + 8]
+    pop     ecx
+    pop     edi
+    pop     esi
+    pop     ebp
+    ret
+
+
+
+;-----------------------------------------------------------------
+; initKernel : 将内核代码放到相应的内存中
+; 
+
+initKernel:
+    xor     esi, esi
+    movzx   ecx, word [KERNEL_FILE_ADDRESS + 2Ch]   ; ELFHdr->e_phnum
+    mov     esi, [KERNEL_FILE_ADDRESS + 1Ch]        ; HLFHdr->e_phoff
+    add     esi, KERNEL_FILE_ADDRESS                ; Program header physicial address
+.copyOneSegment:
+    mov     eax, [esi + 0]                          ; ProHea->p_type
+    cmp     eax, 0                                  ; PT_NULL
+    jz      .noCopy
+    push    dword [esi + 10h]                       ; PHer->filesz
+    mov     eax, [esi + 04h]
+    add     eax, KERNEL_FILE_ADDRESS
+    push    eax                                     ; codeAdr = KERNEL_FILE_ADDRESS + PHer->offset
+    push    dword [esi + 08h]                       ; PHer->vaddr
+    call    memCpy
+    add     esp, 12                                 ; 恢复堆栈
+.noCopy:
+    add     esi, 20h
+    dec     ecx
+    jnz     .copyOneSegment
+    ret
+
+

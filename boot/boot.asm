@@ -43,7 +43,7 @@ section .text                           ; unix like platforms user like use lowe
     LOADER_BASE             equ LOADER_ADDRESS >> 4
     LOADER_OFFSET           equ LOADER_ADDRESS & 0x0F
 
-    Loder_Name              DB  "LOADER     " ; 查看linux的输出发现存的是大写。后补空格填够１１字节
+    Loder_Name              DB  "LOADER  BIN" ; 查看linux的输出发现存的是大写。后补空格填够１１字节
 
     fat_item_num            dw  -1
     load_seg_add            dw  LOADER_ADDRESS >> 4  ; 段地址。

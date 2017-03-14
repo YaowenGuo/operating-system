@@ -15,9 +15,11 @@
     FAT_ADDRESS             equ 0x500   ; FAT表的加载地址
     DIRECTORY_ADDRESS       equ 0x1700  ; 根目录的加载地址
     LOADER_ADDRESS          equ 0x90000
-    KERNEL_ADDRESS          equ 0x80000
+    KERNEL_FILE_ADDRESS     equ 0x80000
     PAGE_DIR_ADDRESS        equ 0x100000
     PAGE_TABLE_ADDRESS      equ 0x101000
+    KERNEL_ENTRY_PHYADDR    equ 0x30400
+
     ; 扇区信息，这些全是根据引导扇区中FAT文件的配置计算出来的，使用代码计算也可以，但很繁琐，况且
     ; 引导扇区没有这么大空间放这些代码，这里预先计算出结果直接使用
 
