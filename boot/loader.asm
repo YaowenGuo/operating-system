@@ -88,8 +88,8 @@
     _Mem_Disp_Title_Str  db  "StartAddress      Length            Type", 0Ah, 0  ;添加换行和结束标志，使用C语言中的字符串结束标志 
     _mem_check_buf: times 256   db  0
     _ARDS_num_dw:   dd  0   ; ARDS:Address Range Descriptor Structor. 256 / 20 只用一字节就够了
-    _Mem_Size_Hint:  db  "Memory size is: ",0
-    _mem_size_dq:    dq  0
+    _Mem_Size_Hint: db  "Memory size is: ",0
+    _mem_size_dq:   dq  0
 
     ; 以下标号是线性地址，用于保护模式
     Mem_Disp_Title_Str: equ LOADER_ADDRESS + _Mem_Disp_Title_Str
@@ -203,9 +203,26 @@ Entery:
     int 21h                             ; ┛  
 
 
+
+;---------------------------------------------------------------------------
+; 关闭软盘驱动
+; 
+
+closeFloppyDrive:
+    push    dx
+    mov     dx, 3f2h
+    mov     al, 0
+    out     dx, al
+    pop     dx
+    ret 
+
+
+
+
 [section .s32] ;32位代码段，由实模式跳入。也是该段中$$的地址
 align 32  ; ?
 [bits 32] ; 告诉编译器，此段使用３２位指令。缺少该伪指令会导致编译出的代码错误
+%include "string.asm"
 
 ; 如下的两个宏要在３２位代码段中使用，所以要放在[bits 32]之后，否则会出现编译后的指令错误
 %macro dispMemInfo 0
@@ -340,91 +357,8 @@ ProterModeStart:
     jmp     SELECTER_FLATC:KERNEL_ENTRY_PHYADDR
     
 
-;---------------------------------------------------------------------------
-; 关闭软盘驱动
-; 
-
-closeFloppyDrive:
-    push    dx
-    mov     dx, 3f2h
-    mov     al, 0
-    out     dx, al
-    pop     dx
-    ret 
 
 
-
-
-
-
-;----------------------------------------------------------------
-; 显示一个字符，特殊字符除换行特殊处理，其他字符都直接打印
-; 入栈：一字节字符
-; 入栈：一字节颜色值
-; disp_position_dw: 显示的位置
-; 无返回值
-;
-dispAChar:
-    push    ebp
-    mov     ebp, esp
-    push    edi
-    push    eax
-    push    ebx
-    mov     edi, [disp_position_dw]
-    mov     ax, [ebp + 8]
-    cmp     al, 0Ah                 ; 是回车吗？
-    jne     .printChar              ; 不是，打印该字符
-    ; 是回车，计算下一行的首字符的位置
-    push    eax                     ; 保护字符信息
-    ; 计算行数
-    mov     eax, edi
-    mov     bl,  160
-    div     bl
-    and     eax, 0FFh
-    inc     eax                     ; 加一行
-    mov     bl, 160
-    mul     bl
-    mov     edi, eax
-    pop     eax                     ; 获取字符信息
-    jmp     .savePosition           ; 跳过显示
-.printChar:
-    mov     [gs:edi], ax
-    add     edi, 2
-    ; 保存下一次显示的位置
-.savePosition:
-    mov     [disp_position_dw], edi
-    pop     ebx
-    pop     eax
-    pop     edi
-    pop     ebp
-    ret
-
-;----------------------------------------------------------------------
-; 显示一个字符串，使用C语言中的规范，以0作为字符串的结束标志。为了能够在ｃ语言中调用
-; 该函数，使用c语言参数的传递规范，使用堆栈传递参数
-; 入栈：字符串首地址
-; 
-
-dispStr:
-    push    ebp
-    mov     ebp, esp
-    push    esi
-    push    eax
-    mov     esi, [ebp + 8]      ; 获取字符串首地址
-    mov     ah, 0fh             ; 白字
-.nextChar:
-    lodsb                       ; al <- [esi]
-    test    al, al              ; 是０吗？
-    jz      .end
-    push    ax                  ; 低字节字符，高字节颜色
-    call    dispAChar
-    add     esp, 2              ; 恢复堆栈
-    jmp     .nextChar
-.end:
-    pop     eax
-    pop     esi
-    pop     ebp
-    ret
 
 
 
@@ -510,33 +444,7 @@ dispIntInHex:
     pop     ebx
     ret
 
-;-------------------------------------------------------------------------
-; 内存拷贝
-; void* memCpy( void * es:pDest, void* ds:pSrc, int iSize);
-; pDest:    point destination
-; pSrc:     point source
-; iSize:    int size
-; return:   destination
 
-memCpy:
-    push    ebp
-    mov     ebp, esp
-    push    esi
-    push    edi
-    push    ecx
-
-    mov     edi, [ebp + 8]          ; Destination
-    mov     esi, [ebp + 12]         ; Source
-    mov     ecx, [ebp + 16]         ; Counter
-    cld
-    rep     movsb
-
-    mov     eax, [ebp + 8]
-    pop     ecx
-    pop     edi
-    pop     esi
-    pop     ebp
-    ret
 
 
 
