@@ -12,4 +12,20 @@
 */
 #define DESCRIPTOR_NUM 	128  
 
-#endif
+/*
+* 8259A interrupt control ports
+* INTE->interrupt
+* 
+*/
+
+#define INTE_MASTER_EVEN	0x20 	// Master chip even control port 
+#define INTE_MASTER_ADD 	0x21 	// Master chip add control port
+#define INTE_SLAVE_EVEN		0xA0	// Slave chip even control port
+#define INTE_SLAVE_EVEN	 	0xA1 	// Slave chip add control port
+
+
+/*
+*　Interrupt vector
+*/
+#define INTE_VECTOR_IRQ0 	0x20 	// 
+#define INTE_VECTOR_IRQ8	0x28 	// 

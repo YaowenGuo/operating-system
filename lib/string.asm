@@ -3,7 +3,7 @@ global  dispAChar
 global  dispStr
 global  memCpy
 
-    disp_position_dw:  dd    0
+    
 ;----------------------------------------------------------------
 ; 显示一个字符，特殊字符除换行特殊处理，其他字符都直接打印
 ; 入栈：一字节字符
