@@ -45,5 +45,68 @@ initStack:
 	call 	test
 	hlt
 
+; 中断和异常 -- 异常
+divideError:
+	push	0xFFFFFFFF	; no err code
+	push	0		; vector_no	= 0
+	jmp	exception
+debugException:
+	push	0xFFFFFFFF	; no err code
+	push	1		; vector_no	= 1
+	jmp	exception
+nmi:
+	push	0xFFFFFFFF	; no err code
+	push	2		; vector_no	= 2
+	jmp	exception
+debugInterrupt:
+	push	0xFFFFFFFF	; no err code
+	push	3		; vector_no	= 3
+	jmp	exception
+overflow:
+	push	0xFFFFFFFF	; no err code
+	push	4		; vector_no	= 4
+	jmp	exception
+boundsCheck:
+	push	0xFFFFFFFF	; no err code
+	push	5		; vector_no	= 5
+	jmp	exception
+invalOpCode:
+	push	0xFFFFFFFF	; no err code
+	push	6		; vector_no	= 6
+	jmp	exception
+coprNotAvailable:
+	push	0xFFFFFFFF	; no err code
+	push	7		; vector_no	= 7
+	jmp	exception
+doubleFault:
+	push	8		; vector_no	= 8
+	jmp	exception
+coprSegOverrun:
+	push	0xFFFFFFFF	; no err code
+	push	9		; vector_no	= 9
+	jmp	exception
+invalTss:
+	push	10		; vector_no	= A
+	jmp	exception
+segmentNotPresent:
+	push	11		; vector_no	= B
+	jmp	exception
+stackException:
+	push	12		; vector_no	= C
+	jmp	exception
+generalProtection:
+	push	13		; vector_no	= D
+	jmp	exception
+pageFault:
+	push	14		; vector_no	= E
+	jmp	exception
+floatError:
+	push	0xFFFFFFFF	; no err code
+	push	16		; vector_no	= 10h
+	jmp	exception
 
+exception:
+	call	exceptionHandler
+	add	esp, 4*2	; 让栈顶指向 EIP，堆栈中从顶向下依次是：EIP、CS、EFLAGS
+	hlt
 	
