@@ -39,10 +39,16 @@ _start:   ; When ececute this, we asume gs had point to video memory
 										; 不用使用该指令，因为原本的描述符就是一个偏移和权限（也是8）
 										; 即指向描述符1，而initStack标号就是下一条指令的地址，该指令
 										; 执行时，eip自动增加，就是下一条指令的地址
+	lidt 	[idt_ptr]   		; 初始化指向中断向量表的寄存器
+
 initStack:
-	push 	0
-	popfd 						; 赋值EFLAGS，但不影响VM，RF，IOPL，VIF和VIP的值
+	; push 	0
+	; popfd 						; 赋值EFLAGS，但不影响VM，RF，IOPL，VIF和VIP的值
 	call 	test
+
+	ud2
+	; jmp 0x40:0
+
 	hlt
 
 ; 中断和异常 -- 异常
