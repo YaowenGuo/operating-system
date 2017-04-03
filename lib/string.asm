@@ -1,9 +1,12 @@
 [section .text]
+bits 32 
+
 global  dispAChar
 global  dispStr
 global  memCpy
 
-    
+extern disp_position_dw
+
 ;----------------------------------------------------------------
 ; 显示一个字符，特殊字符除换行特殊处理，其他字符都直接打印
 ; 入栈：一字节字符
@@ -25,7 +28,7 @@ dispAChar:
     push    eax                     ; 保护字符信息
     ; 计算行数
     mov     eax, edi
-    mov     bl,  160
+    mov     bl, 160
     div     bl
     and     eax, 0FFh
     inc     eax                     ; 加一行

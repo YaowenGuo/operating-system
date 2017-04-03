@@ -23,10 +23,10 @@
     ; 扇区信息，这些全是根据引导扇区中FAT文件的配置计算出来的，使用代码计算也可以，但很繁琐，况且
     ; 引导扇区没有这么大空间放这些代码，这里预先计算出结果直接使用
 
-    FAT_SECTOR_NUM          equ 9       ; 单个FAT表大小           
-    ROOTDIR_SECTOR_NUM      equ 14      ; 根目录扇区数 
+    FAT_SECTOR_NUM          equ 9       ; 单个FAT表大小
+    ROOTDIR_SECTOR_NUM      equ 14      ; 根目录扇区数
 
-    FAT_START_SECTORS       equ 1       ; FAT表的起扇区          
+    FAT_START_SECTORS       equ 1       ; FAT表的起扇区
     ROOTDIR_START_SECTOR    equ 19      ; 根目录的起始扇区
     DATA_START_SECOTRS      equ 33      ; 数据区的起始扇区
 

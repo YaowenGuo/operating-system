@@ -8,8 +8,8 @@
 ; Buile using this command:
 ;
 ; nasm loader.asm
-; 
 ;
+
 
 
     org     0                                ;偏移地址为0时，不用写org，或者org 0。两者是一样的。

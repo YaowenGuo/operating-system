@@ -4,5 +4,5 @@
 // p-pointer,i-int
 PUBLIC void * memCpy( void* pDst, void* pSrc, int iSize );
 PUBLIC void dispStr( char* pStr);
-
+//PUBLIC vodi disp
 #endif

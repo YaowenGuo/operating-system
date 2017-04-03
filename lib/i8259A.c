@@ -1,4 +1,5 @@
 #include "const.h"
+#include "port.h"
 /*
 *　FIEL NAME ：i8259.c
 * 中断处理
@@ -69,7 +70,7 @@ PUBLIC void init8259A()
 	* 1,OCW1必须写入奇地址端口，OCW2,OCW3必须写入偶地址
 	* 这里先屏蔽所有中断。
 	*/
-	writePort( INTE_MASTER_ADD, 0xFF ); // 屏蔽主片中断
+	writePort( INTE_MASTER_ADD, 0xFD ); // 打开主片的键盘中断
 	writePort( INTE_SLAVE_ADD,  0xFF ); // 屏蔽从片中断
 
 } 
