@@ -5,11 +5,11 @@
 #include "lib.h"
 
 // 复制GDT到内核空间
-PUBLIC void replaecGdt()
+PUBLIC void repositionGdt()
 {
     memCpy( descriptor,                         /* 目标地址 */
             (void *)( * ((u32 *)(&gdt_ptr[2])) ), /* 原地址 */
-            *((u16*)(&gdt_ptr[0]))              /* 长度，由于gdtr中存的长度是偏移，所以需要加1 */
+            *((u16*)(&gdt_ptr[0])) + 1           /* 长度，由于gdtr中存的长度是偏移，所以需要加1 */
             );
 
     /* gdt_ptr[6] 共 6 个字节：0~15:Limit  16~47:Base。用作 sgdt/lgdt 的参数。*/
@@ -211,3 +211,14 @@ void printIRQ(int irq)
     dispInt(irq);
     dispStr("\n");
 }
+
+
+void setDescraptor(DESCRIPTOR * p_desc, u32 base, u32 limit, u16 attribute){
+    p_desc->base_low = base & 0xFFFF;
+    p_desc->base_mid = (base >> 16) & 0xFF;
+    p_desc->base_high = (base >> 24) & 0xFF;
+    p_desc->limit_low = limit & 0xFFFF;
+    p_desc->limit_high_attr2 = ((limit >> 16) & 0xF) | ((attribute >> 8) & 0xF0);
+    p_desc->attr1 = attribute & 0xFF;
+}
+

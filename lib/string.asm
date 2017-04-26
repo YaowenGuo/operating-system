@@ -1,5 +1,4 @@
 [section .text]
-bits 32 
 
 global  dispAChar
 global  dispStr

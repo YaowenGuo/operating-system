@@ -5,6 +5,6 @@
 PUBLIC void test()
 {
     dispStr("\n\n\n\n\n\n\n\n\n"
-        "----------In kernel space----------"); 
+        "----------In kernel space----------\n"); 
 }
 

@@ -6,6 +6,8 @@
 */
 #include "type.h"
 #include "const.h"
+#include "protect.h"
+#include "process.h"
 
 #ifdef GLOBAL_VARIABLES_HERE
 #undef EXTERN
@@ -14,9 +16,14 @@
 
 #ifndef _GLOBAL_H_
 #define _GLOBAL_H_
+
 EXTERN u32          disp_position_dw;
 EXTERN u8           gdt_ptr[ DESC_POINTER_SIZE ]; // gdt pointer 0-15:limit, 16-47:Base
 EXTERN DESCRIPTOR   descriptor[ DESCRIPTOR_NUM ];
 EXTERN u8           idt_ptr[ DESC_POINTER_SIZE ]; // 中断描述符表的指针
 EXTERN GATE         inte_desc[ INTE_DESC_NUM ];   // 中断描述符
+EXTERN PCB          proc_table[ MAX_PROCESS_NUM ];// 按最多的进程数定义进程表
+EXTERN PCB*         pcb_proc_ready;
+EXTERN char         proc_stack[ PROC_STACK_BYTE ];
+EXTERN TSS          tss;
 #endif

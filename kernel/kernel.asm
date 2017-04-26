@@ -17,12 +17,15 @@ align 32  ; ?
 extern test
 extern gdt_ptr
 extern idt_ptr
-extern replaecGdt
+extern repositionGdt
 extern initIDT
 extern exceptionHandler
 extern divideZero
 extern printIRQ
 extern init8259A
+extern creatProcess
+extern pcb_proc_ready
+extern tss
 
 
 global _start                   ; export _start
@@ -62,7 +65,34 @@ global inteMouse
 global inteFPUException
 global inteATTemperaturePlate
 global inteRetain3
+global wakeupProc
+global testVideo
 
+PCB_STACKBASE       equ 0
+PCB_GSREG           equ PCB_STACKBASE
+PCB_FSREG           equ PCB_GSREG           + 4
+PCB_ESREG           equ PCB_FSREG           + 4
+PCB_DSREG           equ PCB_ESREG           + 4
+PCB_EDIREG          equ PCB_DSREG           + 4
+PCB_ESIREG          equ PCB_EDIREG          + 4
+PCB_EBPREG          equ PCB_ESIREG          + 4
+PCB_KERNELESPREG    equ PCB_EBPREG          + 4
+PCB_EBXREG          equ PCB_KERNELESPREG    + 4
+PCB_EDXREG          equ PCB_EBXREG          + 4
+PCB_ECXREG          equ PCB_EDXREG          + 4
+PCB_EAXREG          equ PCB_ECXREG          + 4
+PCB_RETADR          equ PCB_EAXREG          + 4
+PCB_EIPREG          equ PCB_RETADR          + 4
+PCB_CSREG           equ PCB_EIPREG          + 4
+PCB_EFLAGSREG       equ PCB_CSREG           + 4
+PCB_ESPREG          equ PCB_EFLAGSREG       + 4
+PCB_SSREG           equ PCB_ESPREG          + 4
+PCB_STACK_BUTTOM    equ PCB_SSREG           + 4
+PCB_LDT_SELE_OFFSET equ PCB_STACK_BUTTOM
+PCB_LDT             equ PCB_LDT_SELE_OFFSET + 4
+
+TSS_ESP0            equ 4
+TSS_SS0             equ 8
 [section .bss]
 stack_space: resb 2 * 1024
 stack_bottom:
@@ -78,7 +108,7 @@ _start:   ; When ececute this, we asume gs had point to video memory
 
     ; 将描述符复制到内核空间，并使用内核空间的描述符
     sgdt    [gdt_ptr]           ; 复制时需要知道原描述符的地址，和长度
-    call    replaecGdt          ; 将gdt_ptr指向的描述符复制到内核空间，并将新地址保存到gdt_ptr,
+    call    repositionGdt       ; 将gdt_ptr指向的描述符复制到内核空间，并将新地址保存到gdt_ptr,
                                 ; 将idt_ptr指向idt
     lgdt    [gdt_ptr]           ; 加载新的gdt地址和长度
 
@@ -102,7 +132,8 @@ initStack:
     ; ud2　                       ; 引发中断的操作码,我在编译时根本不识别该指令，只有使用下一条来产生错误了
     ; jmp 0x40:0                  ; 调试外部中断时，需要将此注释，不然运行到此已经发生了异常。跳入了异常处理函数内
 
-    hlt
+    ;hlt
+    call    creatProcess
 
 ; 为什么这里使用如此多的标号，而不是直接使用Ｃ语言的调用？难道仅仅给出一个一个
 ; 指针地址的Ｃ函数不会被编译进结果？还有一点不明白的就是：通过int指令可以调用中断
@@ -182,7 +213,6 @@ exception:
         add     esp, 4
         hlt
 %endmacro
-
 inteClick:                      ; 
     hwInte  0
 inteKeyboard:
@@ -216,3 +246,19 @@ inteATTemperaturePlate:
 inteRetain3:
     hwInte  15
 
+wakeupProc:
+    mov     esp, [pcb_proc_ready]           ; 获得要启动的进程的pcb首地址
+    lldt    [esp + PCB_LDT_SELE_OFFSET]     ; 加载pcb中保存的ldt描述符的选择子
+    lea     eax, [esp + PCB_STACK_BUTTOM]   ; 获得堆栈地址
+    mov     [tss + TSS_ESP0], eax
+    pop     gs
+    pop     fs
+    pop     es
+    pop     ds
+    popad
+    add     esp, 4                          ; 跳过retaddr
+    iretd
+
+testVideo:
+    mov     byte[gs:800], 'A'
+    ret

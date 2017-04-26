@@ -9,19 +9,19 @@ ENTRY_OFFSET = 0x400
 
 ASM = nasm
 ASMFLAGS = -I boot/include/
-ASM_KERNEL_FLAGS = -I include/ -f elf
+ASM_KERNEL_FLAGS = -I include/ -f elf -g
 LD = ld
 # 在64位机上编译目标文件为32位代码，需使用 -m elf_i386参数
-LD_FLAGS = -m elf_i386 -s -Ttext $(ENTRY_POINT)
+LD_FLAGS = -m elf_i386  -Ttext $(ENTRY_POINT)  #调试时去掉-s参数
 CC = gcc
 # 在64位机上编译32位目标文件，需要使用-m32参数
-C_FLAGS = -I include/ -c -fno-builtin -m32
+C_FLAGS = -I include/ -c  -fno-builtin -m32 -g
 
 # Target program
 OS_BOOT = boot/boot.bin boot/loader.bin
 OS_KERNEL = kernel/kernel.bin
 OBJS = kernel/kernel.o kernel/start.o kernel/global.o kernel/protect.o lib/string.o \
-    lib/lib.o lib/i8259A.o lib/port.o
+    lib/lib.o lib/i8259A.o lib/port.o kernel/process.o
 
 TARGET = $(OS_BOOT) $(OS_KERNEL)
 
@@ -64,6 +64,9 @@ kernel/start.o : kernel/start.c include/string.h
 kernel/global.o : kernel/global.c include/const.h include/type.h
 	$(CC) $(C_FLAGS) -o $@ $<
 
+kernel/process.o : kernel/process.c include/process.h include/global.h
+	$(CC) $(C_FLAGS) -o $@ $<
+
 lib/string.o : lib/string.asm
 	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 
@@ -75,3 +78,4 @@ lib/lib.o : lib/lib.c include/lib.h
 
 lib/i8259A.o : lib/i8259A.c include/port.h
 	$(CC) $(C_FLAGS) -o $@ $<
+

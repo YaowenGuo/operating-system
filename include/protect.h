@@ -33,6 +33,40 @@ typedef struct s_gate
     u16 offset_hight;   // 偏移的高１６位
 }GATE;
 
+typedef struct s_tss
+{
+    u32 backlink;
+    u32 esp0;   /* stack pointer to use during interrupt */
+    u32 ss0;    /*   "   segment  "  "    "        "     */
+    u32 esp1;
+    u32 ss1;
+    u32 esp2;
+    u32 ss2;
+    u32 gr3;
+    u32 eip;
+    u32 eflags;
+    u32 eax;
+    u32 ecx;
+    u32 edx;
+    u32 ebx;
+    u32 esp;
+    u32 ebp;
+    u32 esi;
+    u32 edi;
+    u32 es;
+    u32 cs;
+    u32 ss;
+    u32 ds;
+    u32 fs;
+    u32 gs;
+    u32 ldt;
+    u16 trap;
+    u16 iobase; /* I/O位图基址大于或等于TSS段界限，就表示没有I/O许可位图 */
+}TSS;
+
+/* TSS中数据偏移量 */
+#define TSS_ESP0    offsetof(TSS, esp0)
+#define TSS_SS0     offsetof(TSS, ss0)
 /* 中断向量 */
 #define INTE_VECTOR_DIVIDE       0x0
 #define INTE_VECTOR_DEBUG        0x1
@@ -77,10 +111,15 @@ typedef struct s_gate
 #define DA_386IGate             0x8E    /* 386 中断门类型值 */
 
 
-#define SELECTOR_KERNEL_CS        0x08   // 与loader.asm中的一样
+#define SELECTOR_KERNEL_CS      0x08   // 与loader.asm中的一样
+#define SELECTOR_KERNEL_DS      0x10
+#define SELECTOR_KERNEL_GS      0x18
 
-
+#define SELECTOR_RPL_MASK       0xFFFC
+#define SELECTOR_TI_MASK        0xFFFD
 // 打印中断请求号
 void printIRQ(int irq);
+// 设置描述符
+void setDescraptor(DESCRIPTOR * p_desc, u32 base, u32 limit, u16 attribute);
 #endif
 
