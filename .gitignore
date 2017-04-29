@@ -1,5 +1,5 @@
 bochsout.txt
 
 # 编译文件
-.bin
-.o
+*.bin
+*.o
