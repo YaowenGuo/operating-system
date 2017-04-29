@@ -43,8 +43,9 @@ PUBLIC void creatProcess()
     // 指向LDT的描述符
     // 注意，因为此时使用的内核的数据段基地址是０，才能使用p_proc->ldts作为ldt的基地址，
     // 如果不是，则只是个偏移，需要将偏移与LDT中的基地址相加，才能得到线性地址。
-    setDescraptor(&(descriptor[DESC_FIRST_PROC_INDEX]), (u32)(p_proc->ldts), LDT_SIZE * sizeof(DESCRIPTOR) -1,
-            DESC_LDT);// DESC_LDT与内核的描述符的权限相差这么大?,S为0:指向的内容为描述符或门描述符
+    setDescraptor(&(descriptor[DESC_FIRST_PROC_INDEX]), 
+            base2virtual(sele2base(SELECTOR_KERNEL_DS), p_proc->ldts),
+            LDT_SIZE * sizeof(DESCRIPTOR) -1,DESC_LDT);// DESC_LDT与内核的描述符的权限相差这么大?,S为0:指向的内容为描述符或门描述符
 
     pcb_proc_ready = proc_table;
     wakeupProc();
@@ -71,5 +72,8 @@ PUBLIC void delay(int time)
 }
 
 
-
+void taskSchedule(){
+    dispStr("*");
+    delay(1);
+}
 

@@ -2,7 +2,9 @@
 #define _OS_STRING_H_
 
 // p-pointer,i-int
-PUBLIC void * memCpy( void* pDst, void* pSrc, int iSize );
+PUBLIC void * memCpy( void* pDst, void* pSrc, int size );
+
 PUBLIC void dispStr( char* pStr);
-//PUBLIC vodi disp
+
+PUBLIC void memSet( void* pDstm, char ch, int size);
 #endif

@@ -16,13 +16,13 @@ typedef struct s_stackframe {
     u32 gs;         // . 段寄存器应该是使用了双字对齐，才是定义成32位的。
     u32 fs;         // | 保存剩余的寄存器，进程运行的点的状态
     u32 es;         // |
-    u32 ds;         // |
-    u32 edi;        // |
-    u32 esi;        // |
+    u32 ds;         // /
+    u32 edi;        // .
+    u32 esi;        // | 由指令popad弹出，顺序固定
     u32 ebp;        // |
-    u32 kernel_esp; // ?
-    u32 ebx;        // .
-    u32 edx;        // | 由指令popad弹出，顺序固定
+    u32 kernel_esp; // |<-popad会忽略该寄存器。因此可以用此寄存器保存内核栈顶位置
+    u32 ebx;        // |
+    u32 edx;        // |
     u32 ecx;        // |
     u32 eax;        // /
     u32 retaddr;    // kernel.asm::save()的返回地址
@@ -53,5 +53,6 @@ PUBLIC void creatProcess();
 
 // 一个最简单的进程
 void procA();
+void taskSchedule();
 #endif
 

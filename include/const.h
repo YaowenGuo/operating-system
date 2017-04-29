@@ -59,7 +59,7 @@
  */
 #define DESC_TYPE_R     0x8
 #define DESC_TYPE_RW    0x2
-
+#define DESC_TYPE_EA    0x9
 
 /*
 * IDT num
@@ -93,7 +93,6 @@
 // 进程相关
 #define LDT_SIZE 2
 #define MAX_PROCESS_NUM 2
-
 
 
 #endif

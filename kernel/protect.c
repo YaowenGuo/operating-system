@@ -222,3 +222,22 @@ void setDescraptor(DESCRIPTOR * p_desc, u32 base, u32 limit, u16 attribute){
     p_desc->attr1 = attribute & 0xFF;
 }
 
+/*
+ * selece to base address
+ * 由选择子求基地址
+ */
+u32 sele2base(u16 selector){
+    DESCRIPTOR* p_desc = &descriptor[selector >> 3];
+    return (p_desc->base_high << 24) | (p_desc->base_mid << 16) | (p_desc->base_low);
+}
+
+void initTSS(){
+    memSet(&tss, '\0', sizeof(tss));
+    // 为了在跳转时将入栈数据保存到PCB中对应的寄存器中，需要将ss:esp指向对应的寄存器地址
+    // 而PCB是内核中的数据。esp需要在ring0->ring1之前才保存,保证esp指向的是栈顶。
+    tss.ss0 = SELECTOR_KERNEL_DS;
+    tss.iobase = sizeof(tss); // 没有I/O许可位图
+    // 初始化指向TSS的描述符
+    setDescraptor(&descriptor[DESC_TSS_INDEX], base2virtual(sele2base(SELECTOR_KERNEL_DS), &tss),
+            sizeof(tss) - 1, DESC_PRISENT | DESC_TYPE_EA);
+}

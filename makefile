@@ -55,7 +55,7 @@ kernel/kernel.o : kernel/kernel.asm include/protect.h
 	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 
 kernel/protect.o : kernel/protect.c include/protect.h include/type.h \
-		include/const.h include/protect.h 
+		include/const.h include/protect.h include/string.h
 	$(CC) $(C_FLAGS) -o $@ $<
 
 kernel/start.o : kernel/start.c include/string.h

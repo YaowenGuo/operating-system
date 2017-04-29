@@ -26,4 +26,6 @@ EXTERN PCB          proc_table[ MAX_PROCESS_NUM ];// 按最多的进程数定义
 EXTERN PCB*         pcb_proc_ready;
 EXTERN char         proc_stack[ PROC_STACK_BYTE ];
 EXTERN TSS          tss;
+EXTERN u32          kernel_stack_top; // 保存内核栈的栈顶
+EXTERN int          schedule_reenter; // 标志调用程序是否重入了，初始值赋值-1
 #endif

@@ -114,12 +114,23 @@ typedef struct s_tss
 #define SELECTOR_KERNEL_CS      0x08   // 与loader.asm中的一样
 #define SELECTOR_KERNEL_DS      0x10
 #define SELECTOR_KERNEL_GS      0x18
-
+#define SELECTOR_TSS            0x20   // TSS描述符的选择子
 #define SELECTOR_RPL_MASK       0xFFFC
 #define SELECTOR_TI_MASK        0xFFFD
+
+/*
+ * 基地址和偏移地址求线性（虚拟）地址
+ */
+#define base2virtual(base, offset) (u32)((u32)base + (u32)(offset))
+// 由选择子找出偏移量
+PUBLIC u32 sele2base(u16 selector);
+
 // 打印中断请求号
 void printIRQ(int irq);
 // 设置描述符
 void setDescraptor(DESCRIPTOR * p_desc, u32 base, u32 limit, u16 attribute);
+
+// 初始化TSS
+void initTSS();
 #endif
 
