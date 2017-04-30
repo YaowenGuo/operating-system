@@ -92,7 +92,7 @@
 
 // 进程相关
 #define LDT_SIZE 2
-#define MAX_PROCESS_NUM 2
+#define MAX_PROCESS_NUM 3
 
 
 #endif

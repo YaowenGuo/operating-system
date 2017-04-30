@@ -88,8 +88,7 @@ PCB_EBXREG          equ PCB_KERNELESPREG    + 4
 PCB_EDXREG          equ PCB_EBXREG          + 4
 PCB_ECXREG          equ PCB_EDXREG          + 4
 PCB_EAXREG          equ PCB_ECXREG          + 4
-PCB_RETADR          equ PCB_EAXREG          + 4
-PCB_EIPREG          equ PCB_RETADR          + 4
+PCB_EIPREG          equ PCB_EAXREG          + 4
 PCB_CSREG           equ PCB_EIPREG          + 4
 PCB_EFLAGSREG       equ PCB_CSREG           + 4
 PCB_ESPREG          equ PCB_EFLAGSREG       + 4
@@ -104,6 +103,7 @@ TSS_SS0             equ 8
 SELECTOR_TSS        equ 0x20 ; TSS
 
 INTE_MASTER_EVEN    equ 0x20 ; Master chip even control port
+INTE_MASTER_ADD     equ 0x21
 EOI                 equ 0x20
 
 [section .bss]
@@ -134,7 +134,7 @@ _start:   ; When ececute this, we asume gs had point to video memory
     xor     eax, eax
     mov     ax, SELECTOR_TSS
     ltr     ax                  ; 设置指向TSS的指针
-    mov     dword [schedule_reenter], -1
+
     sti                         ; 打开中断允许位
 
     ;jmp    SELECTOR_KERNEL_C:initStack ; 资料上说，这个跳转将强制使用刚刚初始化的描述符，我感觉根本
@@ -224,17 +224,10 @@ exception:
     add esp, 4 * 2              ; 让栈顶指向 EIP，堆栈中从顶向下依次是：EIP、CS、EFLAGS
     hlt
 
-; 硬件中断
-; ---------------------------------
-%macro  hwInte  1
-    push    %1
-    call    printIRQ
-    add     esp, 4
-    hlt
-%endmacro
-inteClick:                      ; 任务调度程序
-    ; 首先要做的就是保存进程运行的状态，即寄存器信息
-    sub     esp, 4
+;--------------------------------------
+; 用于保存计算器
+;
+%macro saveRegsters 0
     pushad
     push    ds
     push    es
@@ -245,10 +238,20 @@ inteClick:                      ; 任务调度程序
     mov     ds, ax
     mov     es, ax
     mov     fs, ax
+%endmacro
 
-    ; 让中断可以继续发生。要放在任务处理之前，以便在任务处理过程中也能接受键盘等需要立刻响应的中断
-    mov     al, EOI
-    out     INTE_MASTER_EVEN, al
+; 硬件中断
+; ---------------------------------
+%macro  hwInte  1
+    push    %1
+    call    printIRQ
+    add     esp, 4
+    hlt
+%endmacro
+inteClick:                      ; 任务调度程序
+    
+;    sub     esp, 4
+    saveRegsters        ; 首先要做的就是保存进程运行的状态，即寄存器信息
 
     ; 如果是上一次调度没有处理完，就进入进入了调度，则直接返回，不用再进行调度。
     ; ?为什么不能放到最前面，入栈之前？
@@ -261,29 +264,28 @@ inteClick:                      ; 任务调度程序
     ; 入栈是在内核栈上的，所以要在开中断之前切换。
     mov     esp, [kernel_stack_top]
 
+    in      al, INTE_MASTER_ADD ;'.
+    or      al, 1               ; | 屏蔽时钟中断
+    out     INTE_MASTER_ADD, al ; /
+    ; 让中断可以继续发生。要放在任务处理之前，以便在任务处理过程中也能接受键盘等需要立刻响应的中断
+    mov     al, EOI
+    out     INTE_MASTER_EVEN, al
 
     ; 在CPU响应中断时会自动关闭中断。在进程调度中，希望响应键盘等立即需要响应的中断，这里打中断
-    sti ;即使中断不打开也会发生重入
+    sti ;为什么不开中断时，一直在打印*,而无法打印A?
     call    taskSchedule
-
     ; 切换到进程是一个整体操作，如果被打断会引起数据错乱。所以把中断关掉。
-    cli ;关不了中断
+    cli 
 
-    ; 如果是重入，则不需要进行下面几条保存工作
-    mov     [kernel_stack_top], esp         ; 保存内核的栈顶
-    mov     esp, [pcb_proc_ready]           ; 获得要启动的进程的pcb首地址
+    in      al, INTE_MASTER_ADD ;'.
+    and     al, 0xFE            ; | 打开时钟中断
+    out     INTE_MASTER_ADD, al ; /
 
-.end:
-    dec     dword [schedule_reenter]
-
-    pop     gs
-    pop     fs
-    pop     es
-    pop     ds
-    popad
-    add     esp, 4              ; 跳过retaddr
-
-    iretd                       ; 用于中断的返回
+    push    wakeupProc          ;'.
+    jmp     .end                ; | 之所以这样写是为了和C语言中使用统一的返回函数wakeupProc
+    push    endReenter          ; | 的结果，C语言只能调用汇编的函数而无法调用宏。然而在这里调用
+.end:                           ; | 函数时，由于wakeupProc不会将调用时的压栈弹出，而造成堆栈不
+    ret                         ; / 平衡，所以使用了push和ret的技巧，返回到wakeupProc执行。
 
 inteKeyboard:
     hwInte  1
@@ -322,10 +324,11 @@ wakeupProc:
     lea     eax, [esp + PCB_STACK_BUTTOM]   ; 获得PCB中进程切换时用于保存寄存器入栈的地址
     mov     [tss + TSS_ESP0], eax
     lldt    [esp + PCB_LDT_SELE_OFFSET]     ; 加载pcb中保存的ldt描述符的选择子
+endReenter: ; 结束重入，由于需要在外部访问，不能再使用内部标号
+    dec     dword [schedule_reenter]
     pop     gs
     pop     fs
     pop     es
     pop     ds
     popad
-    add     esp, 4                          ; 跳过retaddr
     iretd
