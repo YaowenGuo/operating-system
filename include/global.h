@@ -28,4 +28,6 @@ EXTERN char         proc_stack[ MAX_PROCESS_NUM ][ PROC_STACK_BYTE ];
 EXTERN TSS          tss;
 EXTERN u32          kernel_stack_top; // 保存内核栈的栈顶
 EXTERN int          schedule_reenter; // 标志调用程序是否重入了，初始值赋值-1
+EXTERN IRQHandler   irqHandler[ NUM_IRQ ];
+
 #endif

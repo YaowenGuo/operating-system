@@ -4,4 +4,7 @@
 #define _PORT_OPT_H_
 PUBLIC void writePort( u16 port, u8 value );
 PUBLIC u8 readPort( u16 port );
+
+PUBLIC void disableIRQ(int IRQ);
+PUBLIC void enableIRQ(int IRQ);
 #endif

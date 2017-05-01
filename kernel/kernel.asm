@@ -33,7 +33,7 @@ extern init8259A
 extern creatProcess
 extern initTSS
 extern taskSchedule
-
+extern irqHandler
 global _start                   ; export _start
 
 ; 中断程序跳转点
@@ -243,14 +243,6 @@ exception:
 ; 硬件中断
 ; ---------------------------------
 %macro  hwInte  1
-    push    %1
-    call    printIRQ
-    add     esp, 4
-    hlt
-%endmacro
-inteClick:                      ; 任务调度程序
-    
-;    sub     esp, 4
     saveRegsters        ; 首先要做的就是保存进程运行的状态，即寄存器信息
 
     ; 如果是上一次调度没有处理完，就进入进入了调度，则直接返回，不用再进行调度。
@@ -273,7 +265,9 @@ inteClick:                      ; 任务调度程序
 
     ; 在CPU响应中断时会自动关闭中断。在进程调度中，希望响应键盘等立即需要响应的中断，这里打中断
     sti ;为什么不开中断时，一直在打印*,而无法打印A?
-    call    taskSchedule
+    push    %1
+    call    [irqHandler + 4 * %1]
+    pop     ecx
     ; 切换到进程是一个整体操作，如果被打断会引起数据错乱。所以把中断关掉。
     cli 
 
@@ -286,7 +280,10 @@ inteClick:                      ; 任务调度程序
     push    endReenter          ; | 的结果，C语言只能调用汇编的函数而无法调用宏。然而在这里调用
 .end:                           ; | 函数时，由于wakeupProc不会将调用时的压栈弹出，而造成堆栈不
     ret                         ; / 平衡，所以使用了push和ret的技巧，返回到wakeupProc执行。
+%endmacro
 
+inteClick:                      ; 任务调度程序
+    hwInte  0
 inteKeyboard:
     hwInte  1
 inteSlaveChip:

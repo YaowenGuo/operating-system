@@ -1,5 +1,7 @@
 #include "global.h"
 #include "string.h"
+#include "i8259A.h"
+#include "port.h"
 #include "process.h"
 void wakeupProc();
 void testVideo();
@@ -7,6 +9,9 @@ void testVideo();
 // 创建进程
 PUBLIC void creatProcess()
 {
+    setIRQHandler(CLICK_IQR, taskSchedule); // 设置时钟中断的处理函数
+    enableIRQ(CLICK_IQR); // 打开时钟中断
+
     // 方便循环赋值
     TASK task[MAX_PROCESS_NUM] = {
         {procA, "procA"}, {procB, "procB"}, {procC, "procC"}};

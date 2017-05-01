@@ -64,7 +64,8 @@ kernel/start.o : kernel/start.c include/string.h
 kernel/global.o : kernel/global.c include/const.h include/type.h
 	$(CC) $(C_FLAGS) -o $@ $<
 
-kernel/process.o : kernel/process.c include/process.h include/global.h
+kernel/process.o : kernel/process.c include/process.h include/global.h \
+		include/i8259A.h
 	$(CC) $(C_FLAGS) -o $@ $<
 
 lib/string.o : lib/string.asm

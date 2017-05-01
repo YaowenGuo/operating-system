@@ -1,5 +1,6 @@
 #include "const.h"
 #include "port.h"
+#include "global.h"
 /*
 *　FIEL NAME ：i8259.c
 * 中断处理
@@ -70,7 +71,15 @@ PUBLIC void init8259A()
 	* 1,OCW1必须写入奇地址端口，OCW2,OCW3必须写入偶地址
 	* 这里先关闭键盘中断，打开时钟中断。
 	*/
-	writePort( INTE_MASTER_ADD, 0xFE ); // 打开主片的键盘中断
+	writePort( INTE_MASTER_ADD, 0xFF ); // 屏蔽主片所有中断
 	writePort( INTE_SLAVE_ADD,  0xFF ); // 屏蔽从片中断
 
-} 
+	for(int i = 0; i < NUM_IRQ; ++i){
+		irqHandler[i] = printIRQ;
+	}
+}
+
+PUBLIC void setIRQHandler(int IRQ, IRQHandler hanler){
+	disableIRQ(IRQ);
+	irqHandler[IRQ] = hanler;
+}

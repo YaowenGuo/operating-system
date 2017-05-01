@@ -66,12 +66,14 @@
 */
 #define INTE_DESC_NUM 256
 
+// 外部中断数量
+#define NUM_IRQ     16
+#define CLICK_IQR   0
 /*
 * 8259A interrupt control ports
 * INTE->interrupt
 * 
 */
-
 #define INTE_MASTER_EVEN    0x20    // Master chip even control port 
 #define INTE_MASTER_ADD     0x21    // Master chip add control port
 #define INTE_SLAVE_EVEN     0xA0    // Slave chip even control port
