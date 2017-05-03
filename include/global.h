@@ -29,5 +29,5 @@ EXTERN TSS          tss;
 EXTERN u32          kernel_stack_top; // 保存内核栈的栈顶
 EXTERN int          schedule_reenter; // 标志调用程序是否重入了，初始值赋值-1
 EXTERN IRQHandler   irqHandler[ NUM_IRQ ];
-
+EXTERN unsigned int ticks; // 任务调度的次数
 #endif

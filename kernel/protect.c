@@ -41,9 +41,9 @@ PRIVATE void initGateDesc( u8 vector, u8 desc_type, void (* inteHandler)(), u8 p
 }
 
 
-/* exception_handler
-* 
-*/
+/* 
+ * exception_handler
+ */
 PUBLIC void exceptionHandler(int vectorNum, int errCode, int eip, int cs, int eflags)
 {
     char * errorMsg[] = {
@@ -122,6 +122,7 @@ void inteMouse();
 void inteFPUException();
 void inteATTemperaturePlate();
 void inteRetain3();
+void systemCall();
 
 // 初始化IDT，并将idt_ptr指向idt
 PUBLIC void initIDT()
@@ -194,6 +195,8 @@ PUBLIC void initIDT()
 
     initGateDesc(INTE_VECTOR_47, DA_386IGate, inteRetain3, PRIVILEGE_KRNL);
 
+    // 系统调用向量
+    initGateDesc(INTE_VECTOR_SYS_CALL, DA_386IGate, systemCall, PRIVILEGE_USER);// ?用户特权级
 
     // 将idt_prt指向中断描述符inte_desc
     /* idt_ptr[6] 共 6 个字节：0~15:Limit  16~47:Base。用作 sidt/lidt 的参数。*/

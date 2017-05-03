@@ -96,5 +96,6 @@
 #define LDT_SIZE 2
 #define MAX_PROCESS_NUM 3
 
+#define NUM_SYS_CALL 1
 
 #endif

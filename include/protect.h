@@ -107,6 +107,8 @@ typedef struct s_tss
 #define INTE_VECTOR_46          0x2E
 #define INTE_VECTOR_47          0x2F
 
+#define INTE_VECTOR_SYS_CALL    0x80
+
 /* 系统段描述符类型值说明 */
 #define DA_386IGate             0x8E    /* 386 中断门类型值 */
 

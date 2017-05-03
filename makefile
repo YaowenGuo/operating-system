@@ -21,7 +21,7 @@ C_FLAGS = -I include/ -c  -fno-builtin -m32 -g
 OS_BOOT = boot/boot.bin boot/loader.bin
 OS_KERNEL = kernel/kernel.bin
 OBJS = kernel/kernel.o kernel/start.o kernel/global.o kernel/protect.o lib/string.o \
-    lib/lib.o lib/i8259A.o lib/port.o kernel/process.o
+    lib/lib.o lib/i8259A.o lib/port.o kernel/process.o kernel/systemcall.o
 
 TARGET = $(OS_BOOT) $(OS_KERNEL)
 
@@ -80,3 +80,5 @@ lib/lib.o : lib/lib.c include/lib.h
 lib/i8259A.o : lib/i8259A.c include/port.h
 	$(CC) $(C_FLAGS) -o $@ $<
 
+kernel/systemcall.o : kernel/systemcall.asm
+	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<

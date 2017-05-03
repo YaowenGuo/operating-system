@@ -2,13 +2,13 @@
 #include "string.h"
 #include "i8259A.h"
 #include "port.h"
+#include "lib.h"
+#include "systemcall.h"
 #include "process.h"
 void wakeupProc();
-void testVideo();
 
 // 创建进程
-PUBLIC void creatProcess()
-{
+PUBLIC void creatProcess(){
     setIRQHandler(CLICK_IQR, taskSchedule); // 设置时钟中断的处理函数
     enableIRQ(CLICK_IQR); // 打开时钟中断
 
@@ -27,7 +27,8 @@ PUBLIC void creatProcess()
                 base2virtual(sele2base(SELECTOR_KERNEL_DS), proc_table[i].ldts),
                 LDT_SIZE * sizeof(DESCRIPTOR) -1, DESC_LDT);//S为0:指向的内容为描述符或门描述符
     }
-    schedule_reenter = 0;
+    ticks = 0; // 任务调度的计数
+    schedule_reenter = 0; // 是否任务调度重入标志
     pcb_proc_ready = proc_table;
     wakeupProc();
 }
@@ -69,37 +70,31 @@ void initPCB(PCB* p_proc, proc_func proc, int id, char* p_name, char p_stack[]){
 }
 
 // 一个最简单的进程
-void procA() 
-{
-    while( TRUE )
-    {
+void procA() {
+    while( TRUE ){
+        dispInt(getTicks());
         dispStr("A ");
         delay(1); // 延迟一会，不然打印的A太快了。
     }
 }
 
 // 一个最简单的进程
-void procB()
-{
-    while( TRUE )
-    {
+void procB(){
+    while( TRUE ){
         dispStr("B ");
         delay(1); // 延迟一会，不然打印的A太快了。
     }
 }
 
 // 一个最简单的进程
-void procC()
-{
-    while( TRUE )
-    {
+void procC(){
+    while( TRUE ){
         dispStr("C ");
         delay(1); // 延迟一会，不然打印的A太快了。
     }
 }
 // 一个粗略的延迟函数，调节内部的循环条件，以使打印速度在合理的范围
-PUBLIC void delay(int time)
-{
+PUBLIC void delay(int time){
     for(int i = 0; i < time; ++i){
         for(int j = 0; j < 1000; ++j){
             for(int k = 0; k < 100; ++k);
@@ -109,6 +104,7 @@ PUBLIC void delay(int time)
 
 
 void taskSchedule(){
+    ticks++;
     dispStr("*");
     pcb_proc_ready++;
     if(pcb_proc_ready >= proc_table + MAX_PROCESS_NUM){
@@ -116,3 +112,6 @@ void taskSchedule(){
     }
 }
 
+PUBLIC int sysGetTicks(){
+    return ticks;
+}

@@ -2,3 +2,5 @@
 
 
 #include "global.h"
+
+PUBLIC function sysCall[ NUM_SYS_CALL ] = { sysGetTicks };

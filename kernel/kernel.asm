@@ -9,6 +9,7 @@
 ; 64 bits platforms
 ;   nasm -f elf kernel.asm -o kernel.o
 ;   ld -m elf_i386 kernel.o -o kernel.bin
+%include "asmconst.inc"
 
 [section .data]
 align 32  ; ?
@@ -34,6 +35,7 @@ extern creatProcess
 extern initTSS
 extern taskSchedule
 extern irqHandler
+extern sysCall
 global _start                   ; export _start
 
 ; 中断程序跳转点
@@ -73,38 +75,8 @@ global inteATTemperaturePlate
 global inteRetain3
 global wakeupProc
 global testVideo
+global systemCall
 
-
-PCB_STACKBASE       equ 0
-PCB_GSREG           equ PCB_STACKBASE
-PCB_FSREG           equ PCB_GSREG           + 4
-PCB_ESREG           equ PCB_FSREG           + 4
-PCB_DSREG           equ PCB_ESREG           + 4
-PCB_EDIREG          equ PCB_DSREG           + 4
-PCB_ESIREG          equ PCB_EDIREG          + 4
-PCB_EBPREG          equ PCB_ESIREG          + 4
-PCB_KERNELESPREG    equ PCB_EBPREG          + 4
-PCB_EBXREG          equ PCB_KERNELESPREG    + 4
-PCB_EDXREG          equ PCB_EBXREG          + 4
-PCB_ECXREG          equ PCB_EDXREG          + 4
-PCB_EAXREG          equ PCB_ECXREG          + 4
-PCB_EIPREG          equ PCB_EAXREG          + 4
-PCB_CSREG           equ PCB_EIPREG          + 4
-PCB_EFLAGSREG       equ PCB_CSREG           + 4
-PCB_ESPREG          equ PCB_EFLAGSREG       + 4
-PCB_SSREG           equ PCB_ESPREG          + 4
-PCB_STACK_BUTTOM    equ PCB_SSREG           + 4
-PCB_LDT_SELE_OFFSET equ PCB_STACK_BUTTOM
-PCB_LDT             equ PCB_LDT_SELE_OFFSET + 4
-
-TSS_ESP0            equ 4
-TSS_SS0             equ 8
-; 必须与protect.h中的保持一致
-SELECTOR_TSS        equ 0x20 ; TSS
-
-INTE_MASTER_EVEN    equ 0x20 ; Master chip even control port
-INTE_MASTER_ADD     equ 0x21
-EOI                 equ 0x20
 
 [section .bss]
 stack_space: resb 2 * 1024
@@ -225,39 +197,48 @@ exception:
     hlt
 
 ;--------------------------------------
-; 用于保存计算器
+; 用于保存计存器
 ;
-%macro saveRegsters 0
+%macro save 0
     pushad
     push    ds
     push    es
     push    fs
     push    gs
     ; 内核的堆栈段、数据段、附加段原先都是使用的同一个描述符
-    mov     ax, ss
-    mov     ds, ax
-    mov     es, ax
-    mov     fs, ax
-%endmacro
-
-; 硬件中断
-; ---------------------------------
-%macro  hwInte  1
-    saveRegsters        ; 首先要做的就是保存进程运行的状态，即寄存器信息
+    mov     bx, ss          ; eax用于传递参数，这里使用bx做传递数值的寄存器
+    mov     ds, bx
+    mov     es, bx
+    mov     fs, bx
 
     ; 如果是上一次调度没有处理完，就进入进入了调度，则直接返回，不用再进行调度。
     ; ?为什么不能放到最前面，入栈之前？
     inc     dword [schedule_reenter]
-    jnz     .end        ; 不是0，则上次的调度任务没有完成就再次发生了时钟中断，直接结束
+    jnz     .endReenter         ; 不是0，则上次的调度任务没有完成就再次发生了时钟中断，直接结束
 
     ; 此时esp指向的是PCB中保存寄存器的数据结构的顶部，如果进行任何的进栈出栈就很核能会坏PCB
     ; 中保存的进程运行状态数据，所以接下来应该将esp指向内核自己的栈顶。
     ; 如果是重入，已经在内核栈中，不用再切换，所以放在判断重入之后。同时，希望重入时的跳转
     ; 入栈是在内核栈上的，所以要在开中断之前切换。
+    mov     esi, esp            ; 保存进程表起始地址
     mov     esp, [kernel_stack_top]
 
+    push    wakeupProc          ;'.
+    jmp     .continue           ; | 之所以这样写是为了和C语言中使用统一的返回函数wakeupProc
+.endReenter:                    ; | 的结果，C语言只能调用汇编的函数而无法调用宏。然而在这里调用
+    push    endReenter          ; | 函数时，由于wakeupProc不会将调用时的压栈弹出，而造成堆栈不
+    ret                         ; |
+.continue:                      ; / 平衡，所以使用了push和ret的技巧，返回到wakeupProc执行。
+
+%endmacro
+
+; ---------------------------------
+; 硬件中断
+%macro hwInte 1
+    save                        ; 首先要做的就是保存进程运行的状态，即寄存器信息
+
     in      al, INTE_MASTER_ADD ;'.
-    or      al, 1               ; | 屏蔽时钟中断
+    or      al, (1 << %1)       ; | 屏蔽当前中断
     out     INTE_MASTER_ADD, al ; /
     ; 让中断可以继续发生。要放在任务处理之前，以便在任务处理过程中也能接受键盘等需要立刻响应的中断
     mov     al, EOI
@@ -272,14 +253,18 @@ exception:
     cli 
 
     in      al, INTE_MASTER_ADD ;'.
-    and     al, 0xFE            ; | 打开时钟中断
+    and     al, ~(1 << %1)      ; | 打开当前中断
     out     INTE_MASTER_ADD, al ; /
 
-    push    wakeupProc          ;'.
-    jmp     .end                ; | 之所以这样写是为了和C语言中使用统一的返回函数wakeupProc
-    push    endReenter          ; | 的结果，C语言只能调用汇编的函数而无法调用宏。然而在这里调用
-.end:                           ; | 函数时，由于wakeupProc不会将调用时的压栈弹出，而造成堆栈不
-    ret                         ; / 平衡，所以使用了push和ret的技巧，返回到wakeupProc执行。
+    ret
+%endmacro
+
+; ---------------------------------
+%macro  hwInteSlave 1
+    push    %1
+    call    printIRQ
+    add esp, 4
+    hlt
 %endmacro
 
 inteClick:                      ; 任务调度程序
@@ -299,21 +284,21 @@ inteFloppyDisk:
 inteLPT1:
     hwInte  7
 inteRealtimeClick:
-    hwInte  8
+    hwInteSlave  8
 inteRedirect:
-    hwInte  9
+    hwInteSlave  9
 inteRetain1:
-    hwInte  10
+    hwInteSlave  10
 inteRetain2:
-    hwInte  11
+    hwInteSlave  11
 inteMouse:
-    hwInte  12
+    hwInteSlave  12
 inteFPUException:
-    hwInte  13
+    hwInteSlave  13
 inteATTemperaturePlate:
-    hwInte  14
+    hwInteSlave  14
 inteRetain3:
-    hwInte  15
+    hwInteSlave  15
 
 wakeupProc:
     mov     [kernel_stack_top], esp
@@ -329,3 +314,13 @@ endReenter: ; 结束重入，由于需要在外部访问，不能再使用内部
     pop     ds
     popad
     iretd
+
+systemCall:
+    save
+    sti
+
+    call    [sysCall + eax * 4]
+    mov     [esi + PCB_EAXREG - PCB_STACKBASE], eax ; 准备返回的参数
+
+    cli
+    ret

@@ -68,6 +68,7 @@ void procC();
 
 void taskSchedule();
 
+PUBLIC int sysGetTicks();
 
 #endif
 
