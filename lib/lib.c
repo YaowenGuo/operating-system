@@ -6,18 +6,22 @@
 
 PUBLIC void itoa(int num, char * str)
 {
-    char buff[11];
+    char buff[12];
     int negative = FALSE;
+    int i = 0;
     if(num < 0)
     {
         negative = TRUE;
         num -= num;
     }
-    int i;
-    for( i = 0; num > 0; ++i)
-    {
-        buff[i] = num % 10 + '0';
-        num /= 10;
+    if (num == 0){
+        buff[0] = '0';
+        i = 1;
+    }else{
+        for( ; num > 0; ++i){
+            buff[i] = num % 10 + '0';
+            num /= 10;
+        }
     }
 
     if(negative) buff[i] = '-';
