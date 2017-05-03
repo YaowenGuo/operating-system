@@ -12,6 +12,10 @@ PUBLIC void creatProcess(){
     setIRQHandler(CLICK_IQR, taskSchedule); // 设置时钟中断的处理函数
     enableIRQ(CLICK_IQR); // 打开时钟中断
 
+    // 给不同进程不同优先级分配不同的运行时间
+    proc_table[0].ticks = proc_table[0].priority = 30;
+    proc_table[1].ticks = proc_table[1].priority = 80;
+    proc_table[2].ticks = proc_table[2].priority = 20;
     // 方便循环赋值
     TASK task[MAX_PROCESS_NUM] = {
         {procA, "procA"}, {procB, "procB"}, {procC, "procC"}};
@@ -72,7 +76,7 @@ void initPCB(PCB* p_proc, proc_func proc, int id, char* p_name, char p_stack[]){
 // 一个最简单的进程
 void procA() {
     while( TRUE ){
-        dispInt(getTicks());
+        //dispInt(getTicks());
         dispStr("A ");
         delay(1); // 延迟一会，不然打印的A太快了。
     }
@@ -105,10 +109,35 @@ PUBLIC void delay(int time){
 
 void taskSchedule(){
     ticks++;
-    dispStr("*");
-    pcb_proc_ready++;
-    if(pcb_proc_ready >= proc_table + MAX_PROCESS_NUM){
-        pcb_proc_ready = proc_table;
+    //dispStr("*");
+    // 时间片轮转的调度算法
+    // pcb_proc_ready++;
+    // if(pcb_proc_ready >= proc_table + MAX_PROCESS_NUM){
+    //     pcb_proc_ready = proc_table;
+    // }
+    prioritySchedule();
+}
+
+void prioritySchedule(){
+    pcb_proc_ready->ticks--;
+    if(pcb_proc_ready->ticks == 0){
+        PCB * proc;
+        int maxPriority = 0;
+        for(proc = proc_table; proc < (proc_table + MAX_PROCESS_NUM); proc++){
+            if(maxPriority < proc->ticks){
+                maxPriority = proc->ticks;
+                pcb_proc_ready = proc;
+            }
+        }
+        if(maxPriority == 0){ // 所有的ticks都是0时，重置ticks
+            for(proc = proc_table; proc < (proc_table + MAX_PROCESS_NUM); proc++){
+                proc->ticks = proc->priority;
+                if(maxPriority < proc->ticks){
+                    maxPriority = proc->ticks;
+                    pcb_proc_ready = proc;
+                }
+            }
+        }
     }
 }
 

@@ -57,7 +57,7 @@ global pageFault
 global floatError
 
 ; 外部中断
-global inteClick
+global inteClock
 global inteKeyboard
 global inteSlaveChip
 global inteSerialPort2
@@ -267,7 +267,7 @@ exception:
     hlt
 %endmacro
 
-inteClick:                      ; 任务调度程序
+inteClock:                      ; 任务调度程序
     hwInte  0
 inteKeyboard:
     hwInte  1

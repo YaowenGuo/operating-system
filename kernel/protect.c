@@ -106,7 +106,7 @@ void floatError();
 /*
 * 外部中断处理函数，也是kernel.asm中的位置标号
 */
-void inteClick();
+void inteClock();
 void inteKeyboard();
 void inteSlaveChip();
 void inteSerialPort2();
@@ -163,7 +163,7 @@ PUBLIC void initIDT()
     /*
     * 外部中断向量初始化
     */
-    initGateDesc(INTE_VECTOR_32, DA_386IGate, inteClick, PRIVILEGE_KRNL);
+    initGateDesc(INTE_VECTOR_32, DA_386IGate, inteClock, PRIVILEGE_KRNL);
 
     initGateDesc(INTE_VECTOR_33, DA_386IGate, inteKeyboard, PRIVILEGE_KRNL);
 
@@ -196,7 +196,7 @@ PUBLIC void initIDT()
     initGateDesc(INTE_VECTOR_47, DA_386IGate, inteRetain3, PRIVILEGE_KRNL);
 
     // 系统调用向量
-    initGateDesc(INTE_VECTOR_SYS_CALL, DA_386IGate, systemCall, PRIVILEGE_USER);// ?用户特权级
+    initGateDesc(INTE_VECTOR_SYS_CALL, DA_386IGate, systemCall, PRIVILEGE_USER);// 用户特权级，所有特权级的程序都能调用该门
 
     // 将idt_prt指向中断描述符inte_desc
     /* idt_ptr[6] 共 6 个字节：0~15:Limit  16~47:Base。用作 sidt/lidt 的参数。*/

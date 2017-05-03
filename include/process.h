@@ -66,6 +66,9 @@ void procB();
 // 一个最简单的进程
 void procC();
 
+// 优先级调度算法
+void prioritySchedule();
+// 任务调度
 void taskSchedule();
 
 PUBLIC int sysGetTicks();
