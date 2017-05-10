@@ -36,8 +36,8 @@ typedef struct s_gate
 typedef struct s_tss
 {
     u32 backlink;
-    u32 esp0;   /* stack pointer to use during interrupt */
-    u32 ss0;    /*   "   segment  "  "    "        "     */
+    u32 esp0;   /* 内核栈 */
+    u32 ss0;    /* 内核栈 */
     u32 esp1;
     u32 ss1;
     u32 esp2;
@@ -127,8 +127,7 @@ typedef struct s_tss
 // 由选择子找出偏移量
 PUBLIC u32 sele2base(u16 selector);
 
-// 打印中断请求号
-void printIRQ(int irq);
+
 // 设置描述符
 void setDescraptor(DESCRIPTOR * p_desc, u32 base, u32 limit, u16 attribute);
 

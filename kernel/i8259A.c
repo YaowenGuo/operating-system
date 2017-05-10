@@ -1,6 +1,9 @@
 #include "const.h"
 #include "port.h"
+#include "string.h"
+#include "lib.h"
 #include "global.h"
+#include "i8259A.h"
 /*
 *　FIEL NAME ：i8259.c
 * 中断处理
@@ -75,11 +78,19 @@ PUBLIC void init8259A()
 	writePort( INTE_SLAVE_ADD,  0xFF ); // 屏蔽从片中断
 
 	for(int i = 0; i < NUM_IRQ; ++i){
-		irqHandler[i] = printIRQ;
-	}
+        irqHandler[i] = printIRQ;
+    }
+}
+
+// 打印中断请求号
+PUBLIC void printIRQ(int irq)
+{
+    dispStr("\nInterrupt Request Number: ");
+    dispInt(irq);
+    dispStr("\n");
 }
 
 PUBLIC void setIRQHandler(int IRQ, IRQHandler hanler){
-	disableIRQ(IRQ);
-	irqHandler[IRQ] = hanler;
+    disableIRQ(IRQ);
+    irqHandler[IRQ] = hanler;
 }

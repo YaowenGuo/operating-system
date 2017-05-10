@@ -29,8 +29,7 @@ vector: 要初始化的门描述符在表中的偏移量
 funcPointer: 函数指针，即要调用的函数的地址
 privilege: 特权级
 */
-PRIVATE void initGateDesc( u8 vector, u8 desc_type, void (* inteHandler)(), u8 privilege)
-{
+PRIVATE void initGateDesc( u8 vector, u8 desc_type, void (* inteHandler)(), u8 privilege){
     GATE * gateDesc         = &inte_desc[vector];
     u32 offset              = (u32)inteHandler;
     gateDesc->offset_low    = offset & 0xFFFF;
@@ -205,14 +204,6 @@ PUBLIC void initIDT()
     *p_idt_limit     = INTE_DESC_NUM * sizeof( GATE ) - 1;
     *p_idt_base      = ( u32 )inte_desc;
 
-}
-
-// 打印中断请求号
-void printIRQ(int irq)
-{
-    dispStr("\nInterrupt Request Number: ");
-    dispInt(irq);
-    dispStr("\n");
 }
 
 

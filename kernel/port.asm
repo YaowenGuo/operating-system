@@ -7,6 +7,8 @@ global writePort
 global readPort
 global disableIRQ
 global enableIRQ
+global disableInte
+global enableInte
 
 INTE_MASTER_EVEN    equ 0x20 ; Master chip even control port
 INTE_MASTER_ADD     equ 0x21
@@ -55,7 +57,7 @@ disableIRQ:
 .master:
         in      al, INTE_MASTER_ADD
         test    al, ah
-        jnz     dis_already             ; already disabled?
+        jnz     .disableOK             ; already disabled?
         or      al, ah
         out     INTE_MASTER_ADD, al       ; set bit at master 8259
         popf
@@ -64,13 +66,13 @@ disableIRQ:
 .slave:
         in      al, INTE_SLAVE_ADD
         test    al, ah
-        jnz     dis_already             ; already disabled?
+        jnz     .disableOK             ; already disabled?
         or      al, ah
         out     INTE_SLAVE_ADD, al       ; set bit at slave 8259
         popf
         mov     eax, 1                  ; disabled by this function
         ret
-dis_already:
+.disableOK:
         popf
         xor     eax, eax                ; already disabled
         ret
@@ -105,3 +107,11 @@ enableIRQ:
         out     INTE_SLAVE_ADD, al       ; clear bit at slave 8259
         popf
         ret
+
+disableInte:
+    cli
+    ret
+
+enableInte:
+    sti
+    ret
