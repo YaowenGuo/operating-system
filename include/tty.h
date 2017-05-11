@@ -1,9 +1,11 @@
+#include "console.h"
+
 #ifndef _TTY_H_
 #define _TTY_H_
 
-// typedef struct s_tty{
-//     CONSOLE console;
-// }TTY;
+typedef struct s_tty{
+    CONSOLE console;
+}TTY;
 
 PUBLIC void taskTTY();
 
@@ -13,11 +15,11 @@ PUBLIC void taskTTY();
  */
 // PUBLIC void inProcess(TTY* p_tty, u32 key);
 
-// /*
-//  * 初始化终端
-//  */
-// PUBLIC void initTTY(TTY * p_tty);
+/*
+ * 初始化终端
+ */
+PUBLIC void initTTY(TTY * p_tty);
 
-// PRIVATE void useTTY(u32 index);
+PRIVATE void useTTY(u32 index);
 
 #endif

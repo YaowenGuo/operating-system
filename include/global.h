@@ -8,6 +8,7 @@
 #include "const.h"
 #include "protect.h"
 #include "process.h"
+#include "tty.h"
 
 #ifdef GLOBAL_VARIABLES_HERE
 #undef EXTERN
@@ -30,4 +31,6 @@ EXTERN u32          kernel_stack_top; // 保存内核栈的栈顶
 EXTERN int          schedule_reenter; // 标志调用程序是否重入了，初始值赋值-1
 EXTERN IRQHandler   irqHandler[ NUM_IRQ ];
 EXTERN unsigned int ticks; // 任务调度的次数
+EXTERN TTY          tty_table[NUM_TTY];
+EXTERN TTY*         p_current_tty;
 #endif

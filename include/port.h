@@ -1,5 +1,5 @@
 #include "type.h"
-
+#include "const.h"
 #ifndef _PORT_OPT_H_
 #define _PORT_OPT_H_
 PUBLIC void writePort( u16 port, u8 value );
