@@ -8,3 +8,9 @@ PUBLIC u8 readPort( u16 port );
 PUBLIC void disableIRQ(int IRQ);
 PUBLIC void enableIRQ(int IRQ);
 #endif
+
+#ifndef _ENABLE_INTERRUPT_H_
+#define _ENABLE_INTERRUPT_H_
+PUBLIC void disableInte();
+PUBLIC void enableInte();
+#endif

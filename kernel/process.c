@@ -5,20 +5,10 @@
 #include "lib.h"
 #include "systemcall.h"
 #include "process.h"
-void wakeupProc();
+#include "tty.h"
 
 // 创建进程
-PUBLIC void creatProcess(){
-    setIRQHandler(CLICK_IQR, taskSchedule); // 设置时钟中断的处理函数
-    enableIRQ(CLICK_IQR); // 打开时钟中断
-
-    // 给不同进程不同优先级分配不同的运行时间
-    proc_table[0].ticks = proc_table[0].priority = 30;
-    proc_table[1].ticks = proc_table[1].priority = 80;
-    proc_table[2].ticks = proc_table[2].priority = 20;
-    // 方便循环赋值
-    TASK task[MAX_PROCESS_NUM] = {
-        {procA, "procA"}, {procB, "procB"}, {procC, "procC"}};
+PUBLIC void creatProcess(TASK *task){
 
     for(int i=0; i < MAX_PROCESS_NUM; ++i){
         initPCB(&proc_table[i], task[i].start_addr, 1024 + i,
@@ -34,7 +24,6 @@ PUBLIC void creatProcess(){
     ticks = 0; // 任务调度的计数
     schedule_reenter = 0; // 是否任务调度重入标志
     pcb_proc_ready = proc_table;
-    wakeupProc();
 }
 
 
@@ -73,50 +62,7 @@ void initPCB(PCB* p_proc, proc_func proc, int id, char* p_name, char p_stack[]){
     memCpy(&p_proc->p_name, p_name, PROC_NAME_LEN);
 }
 
-// 一个最简单的进程
-void procA() {
-    while( TRUE ){
-        //dispInt(getTicks());
-        dispStr("A ");
-        delay(1); // 延迟一会，不然打印的A太快了。
-    }
-}
 
-// 一个最简单的进程
-void procB(){
-    while( TRUE ){
-        dispStr("B ");
-        delay(1); // 延迟一会，不然打印的A太快了。
-    }
-}
-
-// 一个最简单的进程
-void procC(){
-    while( TRUE ){
-        dispStr("C ");
-        delay(1); // 延迟一会，不然打印的A太快了。
-    }
-}
-// 一个粗略的延迟函数，调节内部的循环条件，以使打印速度在合理的范围
-PUBLIC void delay(int time){
-    for(int i = 0; i < time; ++i){
-        for(int j = 0; j < 1000; ++j){
-            for(int k = 0; k < 100; ++k);
-        }
-    }
-}
-
-
-void taskSchedule(){
-    ticks++;
-    //dispStr("*");
-    // 时间片轮转的调度算法
-    // pcb_proc_ready++;
-    // if(pcb_proc_ready >= proc_table + MAX_PROCESS_NUM){
-    //     pcb_proc_ready = proc_table;
-    // }
-    prioritySchedule();
-}
 
 void prioritySchedule(){
     pcb_proc_ready->ticks--;
@@ -141,6 +87,3 @@ void prioritySchedule(){
     }
 }
 
-PUBLIC int sysGetTicks(){
-    return ticks;
-}

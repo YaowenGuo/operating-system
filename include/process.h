@@ -1,3 +1,4 @@
+#include "protect.h"
 #ifndef _OS_PROCESS_H_
 #define _OS_PROCESS_H_
 
@@ -57,21 +58,12 @@ PUBLIC void delay(int time);
 void initPCB(PCB* p_proc, proc_func proc, int id, char* p_name, char p_stack[]);
 
 // 创建进程
-PUBLIC void creatProcess();
+PUBLIC void creatProcess(TASK* task);
 
-// 一个最简单的进程
-void procA();
-// 一个最简单的进程
-void procB();
-// 一个最简单的进程
-void procC();
 
 // 优先级调度算法
 void prioritySchedule();
-// 任务调度
-void taskSchedule();
 
-PUBLIC int sysGetTicks();
 
 #endif
 

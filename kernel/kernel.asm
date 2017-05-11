@@ -31,7 +31,7 @@ extern exceptionHandler
 extern divideZero
 extern printIRQ
 extern init8259A
-extern creatProcess
+extern kernelMain
 extern initTSS
 extern taskSchedule
 extern irqHandler
@@ -124,7 +124,7 @@ initStack:
     ; jmp 0x40:0                  ; 调试外部中断时，需要将此注释，不然运行到此已经发生了异常。跳入了异常处理函数内
 
     ;hlt
-    call    creatProcess
+    call    kernelMain
 
 ; 为什么这里使用如此多的标号，而不是直接使用Ｃ语言的调用？难道仅仅给出一个一个
 ; 指针地址的Ｃ函数不会被编译进结果？还有一点不明白的就是：通过int指令可以调用中断
