@@ -1,4 +1,3 @@
-#include "const.h"
 #ifndef _CONSOLE_H_
 #define _CONSOLE_H_
 
@@ -47,4 +46,5 @@ PRIVATE void setVideoStartAddr(u32 addr);
  *  其它  : 不做处理
  */
 PUBLIC void scrollScreen(CONSOLE* p_con, int direction);
+
 #endif

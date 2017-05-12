@@ -57,22 +57,22 @@ disableIRQ:
 .master:
         in      al, INTE_MASTER_ADD
         test    al, ah
-        jnz     .disableOK             ; already disabled?
+        jnz     .disableOk              ; already disabled
         or      al, ah
-        out     INTE_MASTER_ADD, al       ; set bit at master 8259
+        out     INTE_MASTER_ADD, al     ; set bit at master 8259
         popf
         mov     eax, 1                  ; disabled by this function
         ret
 .slave:
         in      al, INTE_SLAVE_ADD
         test    al, ah
-        jnz     .disableOK             ; already disabled?
+        jnz     .disableOk              ; already disabled
         or      al, ah
-        out     INTE_SLAVE_ADD, al       ; set bit at slave 8259
+        out     INTE_SLAVE_ADD, al      ; set bit at slave 8259
         popf
         mov     eax, 1                  ; disabled by this function
         ret
-.disableOK:
+.disableOk:
         popf
         xor     eax, eax                ; already disabled
         ret

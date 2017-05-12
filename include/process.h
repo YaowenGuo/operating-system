@@ -1,3 +1,4 @@
+#include "protect.h"
 #ifndef _OS_PROCESS_H_
 #define _OS_PROCESS_H_
 
@@ -62,10 +63,7 @@ PUBLIC void creatProcess(TASK* task);
 
 // 优先级调度算法
 void prioritySchedule();
-// 任务调度
-void taskSchedule();
 
-PUBLIC int sysGetTicks();
 
 #endif
 

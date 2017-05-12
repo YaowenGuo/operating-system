@@ -1,4 +1,5 @@
 #include "port.h"
+#include "const.h"
 #include "global.h"
 #include "console.h"
 #include "type.h"
@@ -8,9 +9,11 @@
 PUBLIC void initConsole(CONSOLE* p_con, int index){
 
     int v_mem_size = V_MEM_SIZE >> 1;   /* 显存总大小 (in WORD) */
-
-    int con_v_mem_size                   = v_mem_size / NUN_CONSOLES;
-    p_con->original_addr      = index * con_v_mem_size;
+    // 防止不足一行的情况出现。如果不在这里去除，没了不打印下一屏的内容，最后不满一行的
+    // 内容也是不能显示的，反而使后面的计算变得麻烦。
+    int con_v_mem_size        = v_mem_size / SCREEN_WIDTH / NUN_CONSOLE * SCREEN_WIDTH;
+    // 注意 VGA端口的地址设置也是以偏移地址的
+    p_con->original_addr      = index * con_v_mem_size; 
     p_con->v_mem_limit        = con_v_mem_size;
     p_con->current_start_addr = p_con->original_addr;
 
@@ -19,15 +22,13 @@ PUBLIC void initConsole(CONSOLE* p_con, int index){
 
     if (index == 0) {
         /* 第一个控制台沿用原来的光标位置 */
-        p_con->cursor = disp_position_dw / 2;
-        disp_position_dw = 0;
+        p_con->cursor = disp_position_dw / 2; // 不覆盖原有的数据
+        disp_position_dw = 0; //将原来的位置设0，如果使用了原先的打印函数，会打印到开始，便于知道。
     }
     else {
         putc(p_con, index + '0');
         putc(p_con, '#');
     }
-
-    setCursor(p_con->cursor);
 }
 
 PUBLIC void putc(CONSOLE* p_con, char ch){
@@ -36,11 +37,8 @@ PUBLIC void putc(CONSOLE* p_con, char ch){
     
     switch(ch) {
     case '\n':
-        if (p_con->cursor < p_con->original_addr +
-            p_con->v_mem_limit - SCREEN_WIDTH) {
-            p_con->cursor = p_con->original_addr + SCREEN_WIDTH * 
-                ((p_con->cursor - p_con->original_addr) /
-                 SCREEN_WIDTH + 1);
+        if (p_con->cursor < p_con->original_addr + p_con->v_mem_limit - SCREEN_WIDTH) {
+            p_con->cursor = (p_con->cursor / SCREEN_WIDTH + 1) * SCREEN_WIDTH;
         }
         break;
     case '\b':
@@ -51,8 +49,7 @@ PUBLIC void putc(CONSOLE* p_con, char ch){
         }
         break;
     default:
-        if (p_con->cursor <
-            p_con->original_addr + p_con->v_mem_limit - 1) {
+        if (p_con->cursor < p_con->original_addr + p_con->v_mem_limit - 1) {
             *p_vmem++ = ch;
             *p_vmem++ = DEFAULT_CHAR_COLOR;
             p_con->cursor++;
@@ -126,9 +123,3 @@ PUBLIC void scrollScreen(CONSOLE* p_con, int direction){
     setVideoStartAddr(p_con->current_start_addr);
     setCursor(p_con->cursor);
 }
-
-// PUBLIC void switchConsole(CONSOLE* p_con){
-
-//     setCursor(p_con->cursor);
-//     setVideoStartAddr(p_con->current_start_addr);
-// }

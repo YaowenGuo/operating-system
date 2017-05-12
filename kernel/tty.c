@@ -1,11 +1,13 @@
-#include "port.h"
 #include "global.h"
+#include "process.h"
+#include "tty.h"
+#include "string.h"
 #include "keyboard.h"
 #include "console.h"
-#include "tty.h"
+#include "lib.h"
+#include "port.h"
 
 PUBLIC void taskTTY(){
-    
     TTY*    p_tty;
 
     for (p_tty=tty_table; p_tty < tty_table + NUM_TTY; p_tty++) {
@@ -17,11 +19,27 @@ PUBLIC void taskTTY(){
         for (p_tty=tty_table; p_tty < tty_table + NUM_TTY; p_tty++) {
             if(p_tty == p_current_tty){
                 keyboardRead(p_tty);
-                //flush(&p_tty->console);
-                //putc(&p_tty->console, 'c');
             }
         }
     }
+}
+
+/*
+ * 初始化终端
+ */
+PUBLIC void initTTY(TTY * p_tty){
+    int index = p_tty - tty_table;
+    initConsole(&(p_tty->console), index);
+}
+
+
+/*
+ * 切换正在使用的终端
+ */
+PRIVATE void useTTY(u32 index){
+    if(index >= NUM_TTY){ return; }
+    p_current_tty = &tty_table[index];
+    flush(&p_current_tty->console);
 }
 
 /*
@@ -32,8 +50,6 @@ PUBLIC void inProcess(TTY* p_tty, u32 key){
     //char output[2] = {'\0', '\0'};
 
     if (!(key & FLAG_EXT)) { // 是可打印字符，就是ASCII码
-            //output[0] = key & 0xFF;
-            //disp_str(output);
             putc(&p_tty->console, key);
     }
     else{ // 就是不可打印字符的扫描码
@@ -75,24 +91,5 @@ PUBLIC void inProcess(TTY* p_tty, u32 key){
             break;
         }
     }
-}
-
-/*
- * 初始化终端
- */
-PUBLIC void initTTY(TTY * p_tty){
-    // p_tty->inbuf_count = 0;
-    // p_tty->p_inbuf_head = p_tty->p_inbuf_tail = p_tty->p_inbuf;
-    int index = p_tty - tty_table;
-    initConsole(&(p_tty->console), index);
-}
-
-/*
- * 切换正在使用的终端
- */
-PRIVATE void useTTY(u32 index){
-    if(index >= NUM_TTY){ return; }
-    p_current_tty = &tty_table[index];
-    flush(&p_current_tty->console);
 }
 

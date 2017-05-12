@@ -2,5 +2,6 @@
 
 
 #include "global.h"
+#include "clock.h"
 
 PUBLIC function sysCall[ NUM_SYS_CALL ] = { sysGetTicks };

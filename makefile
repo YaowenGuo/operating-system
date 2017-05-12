@@ -10,7 +10,7 @@ ENTRY_OFFSET = 0x400
 vpath %.c kernel lib
 vpath %.asm kernel lib
 vpath %.h include
-vpath %.o lib kernel devices/driver
+
 ASM = nasm
 ASMFLAGS = -I boot/include/
 ASM_KERNEL_FLAGS = -I include/ -f elf -g
@@ -27,19 +27,18 @@ C_FLAGS := -c  -fno-builtin -m32 -g -I include
 # Target program
 OS_BOOT = boot/boot.bin boot/loader.bin
 OS_KERNEL = kernel/kernel.bin
-OBJS = kernel.o main.o global.o protect.o string.o lib.o process.o systemcall.o \
-       clock.o i8259A.o console.o keyboard.o port.o tty.o
+
+OBJS = kernel.o main.o global.o protect.o string.o lib.o i8259A.o \
+       port.o process.o systemcall.o tty.o clock.o keyboard.o console.o
 
 
 TARGET = $(OS_BOOT) $(OS_KERNEL)
 
 
-.PHONY : all clean install 
+#.PHONY : all clean install
 
-all : $(TARGET)
 
-clean :
-	rm -f $(TARGET) $(OBJS)
+all : clean $(TARGET) install
 
 # a.img must exist in current floder
 install : 
@@ -48,6 +47,9 @@ install :
 	sudo cp -fv boot/loader.bin /mnt/floppy
 	sudo cp -fv kernel/kernel.bin /mnt/floppy
 	sudo umount /mnt/floppy
+
+clean :
+	rm -f $(TARGET) $(OBJS)
 
 boot/boot.bin : boot/boot.asm  boot/include/staticlib.inc
 	$(ASM) $(ASMFLAGS) -o $@ $<
@@ -59,39 +61,7 @@ boot/loader.bin : boot/loader.asm boot/include/staticlib.inc lib/string.asm
 $(OS_KERNEL) : $(OBJS)
 	$(LD) $(LD_FLAGS) -o $(OS_KERNEL) $(OBJS)
 
-kernel.o : kernel.asm protect.h
-	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 
-main.o : main.c global.h keyboard.h clock.h
-	$(CC) $(C_FLAGS) -o $@ $<
-protect.o : protect.c protect.h type.h const.h protect.h string.h
-	$(CC) $(C_FLAGS) -o $@ $<
-
-start.o : start.c string.h
-	$(CC) $(C_FLAGS) -o $@ $<
-
-global.o : global.c const.h type.h
-	$(CC) $(C_FLAGS) -o $@ $<
-
-process.o : process.c process.h global.h i8259A.h
-	$(CC) $(C_FLAGS) -o $@ $<
-
-systemcall.o : systemcall.asm
-	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
-
-
-# lib
-string.o : string.asm
-	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
-
-lib.o : lib.c lib.h
-	$(CC) $(C_FLAGS) -o $@ $<
-
-clock.o: clock.c
-	$(CC) $(C_FLAGS) -o $@ $<
-
-# i8259A.o: i8259A.c
-# 	$(CC) $(C_FLAGS) -o @
 %.o: %.c
 	$(CC) $(C_FLAGS) -o $@ $<
 

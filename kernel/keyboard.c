@@ -1,12 +1,11 @@
+#include "const.h"
 #include "keyboard.h"
 #include "keymap.h"
-#include "port.h"
 #include "i8259A.h"
-#include "tty.h"
-#include "global.h"
-#include "console.h"
+#include "port.h"
+#include "string.h"
 
-PRIVATE KEYBOARD_BUFF   keyboard_buff;
+PUBLIC KEYBOARD_BUFF   keyboard_buff;
 
 PRIVATE int code_with_E0;
 PRIVATE int shift_l;    /* l shift state */
@@ -22,10 +21,14 @@ PRIVATE int column;
 
 /*
  * 保存扫描码到缓冲区，缓冲区已满则丢弃
+ * 注意：Alt + F4会结束虚拟机执行，我并没有找到修改这个快捷键的地方。
+ * 其它一些快捷键也会被系统占用。这是虚拟环境和物理机不一样的地方。
+ * 我的键盘Alt+Fn并不会得到正确的结果，必须按Fn键和F1-12才能得到Fn
  */
 PUBLIC void saveCode2KbBuff(int irq){
     u8 scan_code = readPort(KB_DATA);
-    putc(&p_current_tty->console, scan_code);
+    // dispAChar(scan_code);
+    // putc(&p_current_tty->console, scan_code);
     if(keyboard_buff.count < SIZE_KB_BUFF){
         *(keyboard_buff.p_head) = scan_code;
         keyboard_buff.p_head++;
@@ -53,8 +56,6 @@ PRIVATE u8 nextCodeInKbBuff(){
     return scan_code;
 }
 
-
-
 /*
  *initKeyboard
  */
@@ -75,6 +76,42 @@ PUBLIC void initKeyboard(){
     enableIRQ(KEYBOARD_IRQ);                    /*开键盘中断*/
 }
 
+/*
+ * 等待 8042 的输入缓冲区空
+ */
+PRIVATE void kbWait(){
+    u8 kb_stat;
+    do {
+        kb_stat = readPort(KB_CMD);
+    } while (kb_stat & 0x02);
+}
+
+
+/*
+ * 等待键盘响应ACK
+ */
+PRIVATE void kbAck(){
+    u8 kb_read;
+
+    do {
+        kb_read = readPort(KB_DATA);
+    } while (kb_read =! KB_ACK);
+}
+
+/*
+ * 设置LED灯
+ */
+PRIVATE void setLeds(){
+    u8 leds = (caps_lock << 2) | (num_lock << 1) | scroll_lock;
+
+    kbWait();
+    writePort(KB_DATA, LED_CODE);
+    kbAck();
+
+    kbWait();
+    writePort(KB_DATA, leds);
+    kbAck();
+}
 
 /*
  * keyboardRead
@@ -94,14 +131,15 @@ PUBLIC void keyboardRead(TTY* p_tty) {
 
         if (! isSpecialCode(scan_code, &key, & make)) {
             /* 首先判断Make Code 还是 Break Code */
-            make = (scan_code & FLAG_BREAK ? TRUE : FALSE);
+            make = (scan_code & FLAG_BREAK ? FALSE : TRUE);
 
             column = 0;
+            // 是否需要大写字母
             int caps = shift_l || shift_r;
-            if (caps_lock) {
-                if ((keymap[scan_code & 0x7F][0] >= 'a') && (keymap[scan_code & 0x7F][0] <= 'z')){
-                    caps = !caps;
-                }
+            // 只有shift和字母组合才进行大小写转换，否则将shift当做功能键上传
+            if (caps_lock && (keymap[scan_code & 0x7F][0] >= 'a') 
+                    && (keymap[scan_code & 0x7F][0] <= 'z')) {
+                caps = !caps;
             }
             if (caps) {// CapsLock被设置
                 column = 1;
@@ -274,42 +312,4 @@ PRIVATE int isSpecialCode(u8 scan_code, u32* p_key, int* p_make){
         }
     }
     return (*p_key == PAUSEBREAK) || (*p_key == PRINTSCREEN);
-}
-
-
-/*
- * 等待 8042 的输入缓冲区空
- */
-PRIVATE void kbWait(){
-    u8 kb_stat;
-    do {
-        kb_stat = readPort(KB_CMD);
-    } while (kb_stat & 0x02);
-}
-
-
-/*
- * 等待键盘响应ACK
- */
-PRIVATE void kbAck(){
-    u8 kb_read;
-
-    do {
-        kb_read = readPort(KB_DATA);
-    } while (kb_read =! KB_ACK);
-}
-
-/*
- * 设置LED灯
- */
-PRIVATE void setLeds(){
-    u8 leds = (caps_lock << 2) | (num_lock << 1) | scroll_lock;
-
-    kbWait();
-    writePort(KB_DATA, LED_CODE);
-    kbAck();
-
-    kbWait();
-    writePort(KB_DATA, leds);
-    kbAck();
 }

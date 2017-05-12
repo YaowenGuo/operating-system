@@ -1,11 +1,19 @@
-#include "const.h"
 #include "type.h"
 #include "tty.h"
-
 #ifndef _KEYBOARD_H_
 #define _KEYBOARD_H_
 
-#define SIZE_KB_BUFF    32          /* size of keyboard input buffer */
+/* AT keyboard */
+/* 8042 ports */
+#define KB_DATA     0x60    /* I/O port for keyboard data
+                    Read : Read Output Buffer
+                    Write: Write Input Buffer(8042 Data&8048 Command) */
+#define KB_CMD      0x64    /* I/O port for keyboard command
+                    Read : Read Status Register
+                    Write: Write Input Buffer(8042 Command) */
+#define LED_CODE    0xED
+#define KB_ACK      0xFA
+
 #define MAP_COLS        3           /* Number of columns in keymap */
 #define NUM_SCAN_CODES  0x80        /* Number of scan codes (rows in keymap) */
 
@@ -112,17 +120,7 @@
                        the value can be found either in the keymap column 0
                        or in the list below */
 
-
-/* AT keyboard */
-/* 8042 ports */
-#define KB_DATA     0x60    /* I/O port for keyboard data
-                    Read : Read Output Buffer
-                    Write: Write Input Buffer(8042 Data&8048 Command) */
-#define KB_CMD      0x64    /* I/O port for keyboard command
-                    Read : Read Status Register
-                    Write: Write Input Buffer(8042 Command) */
-#define LED_CODE    0xED
-#define KB_ACK      0xFA
+#define SIZE_KB_BUFF    32          /* size of keyboard input buffer */
 
 typedef struct s_byte_buff{
     char* p_head;
@@ -147,15 +145,6 @@ PUBLIC void saveCode2KbBuff(int irq);
 PRIVATE u8 nextCodeInKbBuff();
 
 /*
- * keyboardRead
- * 每此调用处理一个按键的扫描码，组合按键需要多次调用
- * 只将扫描码转换为ASCII码，没有对应字符的扫描码不做处理。
- */
-PUBLIC void keyboardRead(TTY* p_tty);
-
-PRIVATE int isSpecialCode(u8 scan_code, u32* p_key, int* p_make);
-
-/*
  * 等待 8042 的输入缓冲区空
  */
 PRIVATE void kbWait();
@@ -169,4 +158,14 @@ PRIVATE void kbAck();
  * 设置LED灯
  */
 PRIVATE void setLeds();
+
+/*
+ * keyboardRead
+ * 每此调用处理一个按键的扫描码，组合按键需要多次调用
+ * 只将扫描码转换为ASCII码，没有对应字符的扫描码不做处理。
+ */
+PUBLIC void keyboardRead(TTY* p_tty);
+
+PRIVATE int isSpecialCode(u8 scan_code, u32* p_key, int* p_make);
+
 #endif

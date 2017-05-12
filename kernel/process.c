@@ -5,9 +5,10 @@
 #include "lib.h"
 #include "systemcall.h"
 #include "process.h"
+#include "tty.h"
 
 // 创建进程
-PUBLIC void creatProcess(TASK* task){
+PUBLIC void creatProcess(TASK *task){
 
     for(int i=0; i < MAX_PROCESS_NUM; ++i){
         initPCB(&proc_table[i], task[i].start_addr, 1024 + i,
@@ -21,9 +22,8 @@ PUBLIC void creatProcess(TASK* task){
                 LDT_SIZE * sizeof(DESCRIPTOR) -1, DESC_LDT);//S为0:指向的内容为描述符或门描述符
     }
     ticks = 0; // 任务调度的计数
-    schedule_reenter = 0; // 是否任务调度重入标志
+    inte_reenter = 0; // 是否任务调度重入标志
     pcb_proc_ready = proc_table;
-    
 }
 
 
@@ -63,17 +63,6 @@ void initPCB(PCB* p_proc, proc_func proc, int id, char* p_name, char p_stack[]){
 }
 
 
-// 一个粗略的延迟函数，调节内部的循环条件，以使打印速度在合理的范围
-PUBLIC void delay(int time){
-    for(int i = 0; i < time; ++i){
-        for(int j = 0; j < 1000; ++j){
-            for(int k = 0; k < 100; ++k);
-        }
-    }
-}
-
-
-
 void prioritySchedule(){
     pcb_proc_ready->ticks--;
     if(pcb_proc_ready->ticks == 0){
@@ -97,6 +86,3 @@ void prioritySchedule(){
     }
 }
 
-PUBLIC int sysGetTicks(){
-    return ticks;
-}
