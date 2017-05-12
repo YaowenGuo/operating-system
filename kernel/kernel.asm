@@ -21,7 +21,7 @@ extern idt_ptr
 extern pcb_proc_ready
 extern tss
 extern kernel_stack_top
-extern schedule_reenter
+extern inte_reenter
 
 ; 声明外部函数
 extern test
@@ -213,7 +213,7 @@ exception:
 
     ; 如果是上一次调度没有处理完，就进入进入了调度，则直接返回，不用再进行调度。
     ; ?为什么不能放到最前面，入栈之前？
-    inc     dword [schedule_reenter]
+    inc     dword [inte_reenter]
     jnz     .endReenter         ; 不是0，则上次的调度任务没有完成就再次发生了时钟中断，直接结束
 
     ; 此时esp指向的是PCB中保存寄存器的数据结构的顶部，如果进行任何的进栈出栈就很核能会坏PCB
@@ -227,7 +227,6 @@ exception:
     jmp     .continue           ; | 之所以这样写是为了和C语言中使用统一的返回函数wakeupProc
 .endReenter:                    ; | 的结果，C语言只能调用汇编的函数而无法调用宏。然而在这里调用
     push    endReenter          ; | 函数时，由于wakeupProc不会将调用时的压栈弹出，而造成堆栈不
-    ret                         ; |
 .continue:                      ; / 平衡，所以使用了push和ret的技巧，返回到wakeupProc执行。
 
 %endmacro
@@ -238,7 +237,7 @@ exception:
     save                        ; 首先要做的就是保存进程运行的状态，即寄存器信息
 
     in      al, INTE_MASTER_ADD ;'.
-    or      al, (1 << %1)       ; | 屏蔽当前中断
+    or      al, (1 << %1)       ; | 相应当前中断
     out     INTE_MASTER_ADD, al ; /
     ; 让中断可以继续发生。要放在任务处理之前，以便在任务处理过程中也能接受键盘等需要立刻响应的中断
     mov     al, EOI
@@ -253,7 +252,7 @@ exception:
     cli 
 
     in      al, INTE_MASTER_ADD ;'.
-    and     al, ~(1 << %1)      ; | 打开当前中断
+    and     al, ~(1 << %1)      ; | 当前中断结束，可以继续接收中断
     out     INTE_MASTER_ADD, al ; /
 
     ret
@@ -307,7 +306,7 @@ wakeupProc:
     mov     [tss + TSS_ESP0], eax
     lldt    [esp + PCB_LDT_SELE_OFFSET]     ; 加载pcb中保存的ldt描述符的选择子
 endReenter: ; 结束重入，由于需要在外部访问，不能再使用内部标号
-    dec     dword [schedule_reenter]
+    dec     dword [inte_reenter]
     pop     gs
     pop     fs
     pop     es

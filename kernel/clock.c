@@ -12,6 +12,11 @@ PUBLIC void initClock(){
 
 void taskSchedule(){
     ticks++;
+    //当前中断已经设置设置了正在响应，不可能重入，这里是不让其他中断中发生的时钟中断重入
+    if (inte_reenter != 0) {
+        return;
+    }
+
     //dispStr("*");
     // 时间片轮转的调度算法
     // pcb_proc_ready++;

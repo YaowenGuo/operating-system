@@ -22,7 +22,7 @@ PUBLIC void creatProcess(TASK *task){
                 LDT_SIZE * sizeof(DESCRIPTOR) -1, DESC_LDT);//S为0:指向的内容为描述符或门描述符
     }
     ticks = 0; // 任务调度的计数
-    schedule_reenter = 0; // 是否任务调度重入标志
+    inte_reenter = 0; // 是否任务调度重入标志
     pcb_proc_ready = proc_table;
 }
 

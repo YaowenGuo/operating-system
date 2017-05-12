@@ -6,7 +6,7 @@
 #include "string.h"
 
 
-PRIVATE KEYBOARD_BUFF   keyboard_buff;
+PUBLIC KEYBOARD_BUFF   keyboard_buff;
 
 PRIVATE int code_with_E0;
 PRIVATE int shift_l;    /* l shift state */

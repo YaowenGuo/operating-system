@@ -9,6 +9,7 @@ global disableIRQ
 global enableIRQ
 global disableInte
 global enableInte
+global seePort
 
 INTE_MASTER_EVEN    equ 0x20 ; Master chip even control port
 INTE_MASTER_ADD     equ 0x21
@@ -115,4 +116,19 @@ disableInte:
 
 enableInte:
     sti
+    ret
+
+
+;-----------------
+; seePort(port);
+; 
+seePort:
+    push    ebp
+    mov     ebp, esp
+    push    edx
+    mov     bx, [esp + 8]
+    xor     eax, eax
+    in      al, dx
+    pop     edx
+    pop     ebp
     ret

@@ -7,6 +7,7 @@ PUBLIC u8 readPort( u16 port );
 
 PUBLIC void disableIRQ(int IRQ);
 PUBLIC void enableIRQ(int IRQ);
+PUBLIC int seePort(char ch);
 #endif
 
 #ifndef _ENABLE_INTERRUPT_H_
