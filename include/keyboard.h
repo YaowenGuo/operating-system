@@ -1,4 +1,5 @@
 #include "type.h"
+#include "tty.h"
 #ifndef _KEYBOARD_H_
 #define _KEYBOARD_H_
 
@@ -156,4 +157,15 @@ PRIVATE void kbAck();
  * 设置LED灯
  */
 PRIVATE void setLeds();
+
+/*
+ * keyboardRead
+ * 每此调用处理一个按键的扫描码，组合按键需要多次调用
+ * 只将扫描码转换为ASCII码，没有对应字符的扫描码不做处理。
+ */
+PUBLIC void keyboardRead(TTY* p_tty);
+
+PRIVATE int isSpecialCode(u8 scan_code, u32* p_key, int* p_make);
+
+
 #endif
