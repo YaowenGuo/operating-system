@@ -104,7 +104,10 @@
 
 // 进程相关
 #define LDT_SIZE 2
-#define MAX_PROCESS_NUM 4
+#define NUM_TASK 1
+#define NUM_PROCESS 3
+
+//#define MAX_PROCESS_NUM 3
 
 #define NUM_SYS_CALL 1
 

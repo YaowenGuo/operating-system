@@ -56,7 +56,7 @@ typedef struct s_task
 PUBLIC void delay(int time);
 
 void initPCB(PCB* p_proc, proc_func proc, int id, char* p_name, char p_stack[]);
-
+void initUserPCB(PCB* p_proc, proc_func proc, int id, char* p_name, char p_stack[]);
 // 创建进程
 PUBLIC void creatProcess(TASK* task);
 

@@ -69,14 +69,15 @@ PUBLIC void kernelMain(){
     proc_table[2].ticks = proc_table[2].priority = 1;
     proc_table[3].ticks = proc_table[3].priority = 1;
     // 方便循环赋值
-    TASK task[MAX_PROCESS_NUM] = {
+
+    TASK proc[NUM_TASK + NUM_PROCESS] = {
+        {taskTTY, "task TTY"},
         {procA, "procA"},
         {procB, "procB"},
-        {procC, "procC"},
-        {taskTTY, "task TTY"}
+        {procC, "procC"}
     };
 
-    creatProcess(task);
+    creatProcess(proc);
 
     initClock();
     initKeyboard();

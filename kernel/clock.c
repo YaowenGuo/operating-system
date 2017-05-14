@@ -25,7 +25,7 @@ void taskSchedule(){
     //dispStr("*");
     // 时间片轮转的调度算法
     // pcb_proc_ready++;
-    // if(pcb_proc_ready >= proc_table + MAX_PROCESS_NUM){
+    // if(pcb_proc_ready >= proc_table + NUM_TASK + NUM_PROCESS){
     //     pcb_proc_ready = proc_table;
     // }
     prioritySchedule();
