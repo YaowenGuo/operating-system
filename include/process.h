@@ -43,6 +43,7 @@ typedef struct s_proc {
     int priority;
     u32 pid;                    /* process id passed in from MM */
     char p_name[PROC_NAME_LEN];            /* name of the process */
+    int index_tty;
 } PCB;
 
 typedef void (*proc_func) ();

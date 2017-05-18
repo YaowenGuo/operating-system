@@ -22,6 +22,7 @@ extern pcb_proc_ready
 extern tss
 extern kernel_stack_top
 extern inte_reenter
+extern pcb_proc_ready
 
 ; 声明外部函数
 extern test
@@ -206,10 +207,10 @@ exception:
     push    fs
     push    gs
     ; 内核的堆栈段、数据段、附加段原先都是使用的同一个描述符
-    mov     bx, ss          ; eax用于传递参数，这里使用bx做传递数值的寄存器
-    mov     ds, bx
-    mov     es, bx
-    mov     fs, bx
+    mov     dx, ss          ; eax .ebx. ecx用于传递参数，这里使用bx做传递数值的寄存器
+    mov     ds, dx
+    mov     es, dx
+    mov     fs, dx
 
     ; 如果是上一次调度没有处理完，就进入进入了调度，则直接返回，不用再进行调度。
     ; ?为什么不能放到最前面，入栈之前？
@@ -316,10 +317,12 @@ endReenter: ; 结束重入，由于需要在外部访问，不能再使用内部
 
 systemCall:
     save
+    push    dword [pcb_proc_ready]          ; 当前进程
     sti
-
+    push    ecx
+    push    ebx
     call    [sysCall + eax * 4]
+    add     esp, 3 * 4                      ; 栈指针还原
     mov     [esi + PCB_EAXREG - PCB_STACKBASE], eax ; 准备返回的参数
-
     cli
     ret

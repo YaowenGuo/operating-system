@@ -109,9 +109,9 @@
 
 //#define MAX_PROCESS_NUM 3
 
-#define NUM_SYS_CALL 1
+#define NUM_SYS_CALL 2
 
-#define NUN_CONSOLE    3
+#define NUN_CONSOLE  3
 #define NUM_TTY         NUN_CONSOLE
 
 /* VGA */

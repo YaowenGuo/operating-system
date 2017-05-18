@@ -60,8 +60,10 @@ PUBLIC void putc(CONSOLE* p_con, char ch){
     while (p_con->cursor >= p_con->current_start_addr + SCREEN_SIZE) {
         scrollScreen(p_con, SCR_DN);
     }
+    if(p_con == p_using_console){
+        flush(p_con);
+    }
 
-    flush(p_con);
 }
 
 PUBLIC void flush(CONSOLE* p_con){
@@ -120,6 +122,6 @@ PUBLIC void scrollScreen(CONSOLE* p_con, int direction){
     else{
     }
 
-    setVideoStartAddr(p_con->current_start_addr);
-    setCursor(p_con->cursor);
+    // setVideoStartAddr(p_con->current_start_addr);
+    // setCursor(p_con->cursor);
 }

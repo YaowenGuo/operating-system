@@ -3,5 +3,6 @@
 
 #include "global.h"
 #include "clock.h"
+#include "tty.h"
 
-PUBLIC function sysCall[ NUM_SYS_CALL ] = { sysGetTicks };
+PUBLIC function sysCall[ NUM_SYS_CALL ] = { sysGetTicks, sys_write };

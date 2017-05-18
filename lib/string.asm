@@ -122,7 +122,7 @@ memSet:
     jz      .2      ; 计数器为零时跳出
 
     mov     byte [edi], dl      ; ┓
-    inc     edi         ; ┛
+    inc     edi                 ; ┛
 
     dec     ecx     ; 计数器减一
     jmp     .1      ; 循环

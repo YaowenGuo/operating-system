@@ -32,5 +32,5 @@ EXTERN int          inte_reenter; // 标志调用程序是否重入了，初始�
 EXTERN IRQHandler   irqHandler[ NUM_IRQ ];
 EXTERN unsigned int ticks; // 任务调度的次数
 EXTERN TTY          tty_table[NUM_TTY];
-EXTERN TTY*         p_current_tty;
+EXTERN CONSOLE*     p_using_console;
 #endif

@@ -29,7 +29,8 @@ OS_BOOT = boot/boot.bin boot/loader.bin
 OS_KERNEL = kernel/kernel.bin
 
 OBJS = kernel.o main.o global.o protect.o string.o lib.o i8259A.o \
-       port.o process.o systemcall.o tty.o clock.o keyboard.o console.o
+       port.o process.o systemcall.o tty.o clock.o keyboard.o console.o \
+       printf.o
 
 
 TARGET = $(OS_BOOT) $(OS_KERNEL)

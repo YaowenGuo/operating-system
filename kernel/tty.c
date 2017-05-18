@@ -17,9 +17,9 @@ PUBLIC void taskTTY(){
 
     while(TRUE){
         for (p_tty=tty_table; p_tty < tty_table + NUM_TTY; p_tty++) {
-            if(p_tty == p_current_tty){
+            // if(p_tty == p_current_tty){
                 keyboardRead(p_tty);
-            }
+            // }
         }
     }
 }
@@ -38,8 +38,8 @@ PUBLIC void initTTY(TTY * p_tty){
  */
 PRIVATE void useTTY(u32 index){
     if(index >= NUM_TTY){ return; }
-    p_current_tty = &tty_table[index];
-    flush(&p_current_tty->console);
+    p_using_console = &(tty_table[index].console);
+    flush(p_using_console);
 }
 
 /*
@@ -93,3 +93,16 @@ PUBLIC void inProcess(TTY* p_tty, u32 key){
     }
 }
 
+
+PUBLIC void tty_write(TTY * p_tty, char* str, int len){
+    char* p_char = str;
+    while(len){
+        putc(&(p_tty->console), *p_char++);
+        len--;
+    }
+}
+// 这里将系统输出和屏幕输处分开，便于将来扩展到不同的输出，如文件。
+PUBLIC int sys_write(char* buf, int len, PCB* p_proc){
+    tty_write(&tty_table[p_proc->index_tty], buf, len);
+    return 0;
+}

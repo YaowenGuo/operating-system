@@ -7,7 +7,8 @@
 #include "process.h"
 #include "clock.h"
 #include "keyboard.h"
-
+#include "stdio.h"
+#include "systemcall.h"
 /* 8253/8254 PIT (Programmable Interval Timer) */
 // #define TIMER0         0x40 /* I/O port for timer channel 0 */
 // #define TIMER_MODE     0x43 /* I/O port for timer mode control */
@@ -33,6 +34,8 @@ void procA() {
     while( TRUE ){
         //dispInt(getTicks());
         //dispStr("A ");
+        int i = getTicks();
+        printf("Ticks: %d",i);
         delay(1); // 延迟一会，不然打印的A太快了。
     }
 }

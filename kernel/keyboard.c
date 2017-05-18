@@ -4,6 +4,7 @@
 #include "i8259A.h"
 #include "port.h"
 #include "string.h"
+#include "global.h"
 
 PUBLIC KEYBOARD_BUFF   keyboard_buff;
 
@@ -119,6 +120,9 @@ PRIVATE void setLeds(){
  * 只将扫描码转换为ASCII码，没有对应字符的扫描码不做处理。
  */
 PUBLIC void keyboardRead(TTY* p_tty) {
+    if(&p_tty->console != p_using_console){
+        return;
+    }
     u8  scan_code;
     int make;   /* 1: make;  0: break. */
 

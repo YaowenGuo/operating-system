@@ -1,4 +1,5 @@
 #include "console.h"
+#include "process.h"
 
 #ifndef _TTY_H_
 #define _TTY_H_
@@ -30,4 +31,7 @@ PRIVATE void useTTY(u32 index);
  */
 PUBLIC void inProcess(TTY* p_tty, u32 key);
 
+PUBLIC void tty_write(TTY * p_tty, char* str, int len);
+// 这里将系统输出和屏幕输处分开，便于将来扩展到不同的输出，如文件。
+PUBLIC int sys_write(char* buf, int len, PCB* p_proc);
 #endif
